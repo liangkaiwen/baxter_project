@@ -1,0 +1,44 @@
+NEEDS TO BE UPDATED WITH NEW --cam* command lines options
+
+
+Projects:
+object_model: main
+G2OStaticLib: g2o specific stuff
+OpenCLStaticLib: opencl specific stuff
+OpenCLConsoleTest: can be ignored
+
+You will need to obtain the g2o library to build this.  Also want sample datasets:
+\\percy\share\Data\Peter\object modeler
+
+// to run on the "truck" sample data: (give full path to "truck" folder")
+--input "C:\Users\peterhen\Desktop\truck" --emii 0.3 --emrp 1000 --icdo 0.1 --ra --focal 540 --vn 256 --vs 0.002 --oc --crs 0.5
+
+// to run on the "cube" sample mapping data: (give full path to "cube" folder")
+// note the changes
+// --md: turn off masking
+// --of: start with feature-matching ransac to initialize combined optimization
+// --vn 400: 400^3 cube
+// --vs 0.01: 0.01 m voxel sizes
+// --icfix: don't use centroid of first frame points but instead start volume at origin
+--input "C:\Users\peterhen\Desktop\cube" --md --of --icfix --emii 0.3 --emrp 1000 --icdo 0.1 --ra --focal 540 --vn 400 --vs 0.01 --oc --crs 0.5
+
+// to capture frames
+--save-input-only --save-only-max-fps 10 --output "where_to_save"
+// then hit "a" to start and stop recording
+
+// to run in live mode (save input for later analysis with --save-input)
+--emii 0.3 --emrp 1000 --icdo 0.1 --ra --focal 540 --vn 256 --vs 0.002 --oc --crs 0.5
+// you first learn the hand histogram 'i' (default filename is hand.yml)
+// then learn object histogram 'o' (default filename is object.yml)
+// finally activate with 'a' and model away!
+
+from ObjectModeler::processKey(char key)
+'a': toggle active when in "live mode"
+'o': learn object histogram in "live mode" (see cout prompts for keys to press with an image window in focus)
+'i': learn hand histogram in "live mode"
+'t': toggle frame object points in 3d display
+'m': generate mesh (in PLY format in location specified by --output "whatever") (default is "dump")
+'v': render volume from the current 3D viewer pose
+'b': render continuously from the currnet 3D viewer pose
+
+

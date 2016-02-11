@@ -1,0 +1,939 @@
+#include "stdafx.h"
+
+#include <iostream>
+#include <vector>
+#include <float.h> // for windows _isnan ??
+using namespace std;
+
+#include <pcl/visualization/cloud_viewer.h>
+#include <pcl/io/io.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/sample_consensus/sac_model_registration.h>
+#include <pcl/sample_consensus/ransac.h>
+#include <pcl/filters/extract_indices.h>
+#include <pcl/common/transforms.h>
+#include <pcl/registration/warp_point_rigid_6d.h> // convert between 6DOF params and transforms
+#include <pcl/pcl_macros.h> // for pcl_isnan
+
+#include <opencv2/opencv.hpp>
+// this has broken cxcore.h include:
+//#include <opencv2/core/eigen.hpp>
+#include "opencv_eigen.hpp"
+
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
+#include "sac_model_registration_reprojection.h"
+//#include "point_xyzkp.h"
+
+// windows hack
+double round(double x) { return floor(x + 0.5); }
+
+// from pcl vis_test.cpp (or whatever it was called originally)
+#if 0
+int user_data;
+
+void
+viewerOneOff (pcl::visualization::PCLVisualizer& viewer)
+{
+    viewer.setBackgroundColor (1.0, 0.5, 1.0);
+    pcl::PointXYZ o;
+    o.x = 1.0;
+    o.y = 0;
+    o.z = 0;
+    viewer.addSphere (o, 0.25, "sphere", 0);
+    std::cout << "i only run once" << std::endl;
+}
+
+void
+viewerPsycho (pcl::visualization::PCLVisualizer& viewer)
+{
+    static unsigned count = 0;
+    std::stringstream ss;
+    ss << "Once per viewer loop: " << count++;
+    viewer.removeShape ("text", 0);
+    viewer.addText (ss.str(), 200, 300, "text", 0);
+
+    //FIXME: possible race condition here:
+    user_data++;
+}
+#endif
+
+typedef pcl::PointXYZRGB PointT;
+typedef pcl::PointCloud<PointT> CloudT;
+
+struct Keypoints{
+	std::vector<cv::KeyPoint> keypoints;
+	cv::Mat descriptors;
+	// 3d points, etc..
+};
+
+struct Frame{
+	CloudT::Ptr cloud_ptr;
+	cv::Mat image_color;
+	cv::Mat image_depth;
+	cv::Mat image_depth_mask;
+	cv::Mat image_gray_float;
+	Keypoints kp;
+};
+
+
+string window_0 = "window_0";
+string window_1 = "window_1";
+string window_2 = "window_2";
+string window_3 = "window_3";
+string window_4 = "window_4";
+string window_5 = "window_5";
+string window_6 = "window_6";
+string window_7 = "window_7";
+
+void addImagesToFrame(Frame& frame) {
+	assert(frame.cloud_ptr);
+	assert(frame.cloud_ptr->height > 1);
+	unsigned int rows = frame.cloud_ptr->height;
+	unsigned int cols = frame.cloud_ptr->width;
+
+	frame.image_color = cv::Mat(rows, cols, CV_8UC3);
+	frame.image_depth = cv::Mat(rows, cols, CV_32FC1);
+	frame.image_depth_mask = cv::Mat(rows, cols, CV_8UC1);
+
+	for (unsigned int row = 0; row < rows; row++) {
+		for (unsigned int col = 0; col < cols; col++) {
+			PointT& p = frame.cloud_ptr->at(col, row);
+			// color
+			frame.image_color.at<cv::Vec3b>(row, col)[0] = p.b;
+			frame.image_color.at<cv::Vec3b>(row, col)[1] = p.g;
+			frame.image_color.at<cv::Vec3b>(row, col)[2] = p.r;
+
+			// depth_image
+			frame.image_depth.at<float>(row, col) = p.z;
+
+			// valid?
+			frame.image_depth_mask.at<uchar>(row, col) = p.z > 0 ? 255 : 0;
+		}
+	}
+
+	// also make a gray float version
+	cv::Mat image_float;
+	frame.image_color.convertTo(image_float, CV_32F, 1.0/255.0);
+	cv::cvtColor(image_float, frame.image_gray_float, CV_BGR2GRAY);
+}
+
+void addFeaturesToFrame(Frame& frame) {
+	cv::Mat image_for_features;
+//    	cv::Mat temp;
+//    	cv::cvtColor(frame.image_color, temp, CV_BGR2GRAY);
+//    	cv::equalizeHist(temp, image_for_features);
+	image_for_features = frame.image_color;
+
+	// detect keypoints
+	// SURF
+	int minHessian = 300;
+	boost::scoped_ptr<cv::FeatureDetector> detector_ptr(new cv::SurfFeatureDetector(minHessian));
+	boost::scoped_ptr<cv::DescriptorExtractor> extractor_ptr(new cv::SurfDescriptorExtractor());
+	// SIFT
+//		boost::scoped_ptr<cv::FeatureDetector> detector_ptr(new cv::SiftFeatureDetector());
+//		boost::scoped_ptr<cv::DescriptorExtractor> extractor_ptr(new cv::SiftDescriptorExtractor());
+
+	detector_ptr->detect( image_for_features, frame.kp.keypoints, frame.image_depth_mask);
+	extractor_ptr->compute( image_for_features, frame.kp.keypoints, frame.kp.descriptors );
+}
+
+Eigen::Matrix3f getProjectionMatrix(const Eigen::Vector2f& focal_lengths, const Eigen::Vector2f& center)
+{
+	Eigen::Matrix3f result = Eigen::Matrix3f::Zero();
+	result(0,0) = focal_lengths(0);
+	result(1,1) = focal_lengths(1);
+	result(0,2) = center(0);
+	result(1,2) = center(1);
+	result(2,2) = 1.0;
+	return result;
+}
+
+
+
+#if 0
+/*
+ * Includes the x,y swap that seems to make sense to go from pcl points to opencv images
+ */
+Eigen::Matrix3f getProjectionMatrixForCVImage(float rows, float cols, float focal_length) {
+    Eigen::Matrix3f proj_m;
+    proj_m.setZero();
+    proj_m(0,0) = focal_length;
+    proj_m(1,1) = focal_length;
+    proj_m(0,2) = cols / 2.0;
+    proj_m(1,2) = rows / 2.0;
+    proj_m(2,2) = 1.0;
+
+    Eigen::Matrix3f swap_x_y;
+    swap_x_y.setZero();
+    swap_x_y(1,0) = swap_x_y(0,1) = swap_x_y(2,2) = 1.0;
+    proj_m = swap_x_y * proj_m;
+
+    return proj_m;
+}
+#endif
+
+bool getRelativeTransformUsingFeatures(const Frame& frame_previous, const Frame& frame_current, Eigen::Affine3f & transform_result) {
+	unsigned int rows = frame_current.cloud_ptr->height;
+	unsigned int cols = frame_current.cloud_ptr->width;
+
+	vector< cv::DMatch > matches;
+	// Matching descriptor vectors with a brute force matcher
+	boost::scoped_ptr<cv::DescriptorMatcher> matcher_ptr(new cv::BruteForceMatcher< cv::L2<float> > ());
+	bool use_knn_matcher = true;
+	bool use_ratio_test = true;
+	if (use_knn_matcher) {
+		vector<vector<cv::DMatch> > knn_matches;
+		int k = 2;
+		matcher_ptr->knnMatch(
+				frame_current.kp.descriptors,
+				frame_previous.kp.descriptors,
+				knn_matches,
+				k);
+
+
+		if (use_ratio_test) {
+			// loop assumes k = 2 and does ratio test
+			assert(k == 2);
+			float ratio = 0.8;
+			for (size_t i = 0; i < knn_matches.size(); i++) {
+				if (knn_matches[i][0].distance / knn_matches[i][1].distance < 0.8) {
+					matches.push_back(knn_matches[i][0]);
+				}
+			}
+		}
+		else {
+			for (size_t i = 0; i < knn_matches.size(); i++) {
+				for (size_t match = 0; match < k; match++) {
+					matches.push_back(knn_matches[i][match]);
+				}
+			}
+		}
+	}
+	else {
+		assert(!use_ratio_test); // make sure you're not stupid
+		matcher_ptr->match(
+				frame_current.kp.descriptors,
+				frame_previous.kp.descriptors,
+				matches );
+	}
+	cout << "matches: " << matches.size() << endl;
+
+	//-- Draw matches
+	cv::Mat img_matches;
+	drawMatches( frame_current.image_color, frame_current.kp.keypoints,
+				 frame_previous.image_color, frame_previous.kp.keypoints,
+				 matches, img_matches );
+	cv::imshow(window_2, img_matches);
+
+	// get 3d points for matches
+	// here we commit to an existing point (could also sample)
+	boost::shared_ptr<vector<int> > indices_previous(new vector<int>);
+	boost::shared_ptr<vector<int> > indices_current(new vector<int>);
+	vector< cv::DMatch > matches_culled;
+	for (vector<cv::DMatch>::iterator match_iter = matches.begin(); match_iter != matches.end(); ++match_iter) {
+		const cv::KeyPoint& kp_current = frame_current.kp.keypoints[match_iter->queryIdx];
+		const cv::KeyPoint& kp_previous = frame_previous.kp.keypoints[match_iter->trainIdx];
+		int index_current = round(kp_current.pt.y) * cols + round(kp_current.pt.x);
+//				cout << "index_current: " << kp_current.pt.x << "," << kp_current.pt.y << ": " << index_current << endl;
+		int index_previous = round(kp_previous.pt.y) * cols + round(kp_previous.pt.x);
+//				cout << "index_previous: " << kp_previous.pt.x << "," << kp_previous.pt.y << ": " << index_previous << endl;
+		bool valid_current = !pcl_isnan(frame_current.cloud_ptr->points[index_current].z);
+		bool valid_previous = !pcl_isnan(frame_previous.cloud_ptr->points[index_previous].z);
+
+		if (valid_current && valid_previous) {
+			indices_current->push_back(index_current);
+			indices_previous->push_back(index_previous);
+			matches_culled.push_back(*match_iter);
+		}
+
+	}
+
+	// using indices will drive me batty
+	CloudT::Ptr cloud_keypoints_previous(new CloudT);
+	CloudT::Ptr cloud_keypoints_current(new CloudT);
+	pcl::ExtractIndices<PointT> extract_indices;
+	extract_indices.setInputCloud(frame_previous.cloud_ptr);
+	extract_indices.setIndices(indices_previous);
+	extract_indices.filter(*cloud_keypoints_previous);
+	extract_indices.setInputCloud(frame_current.cloud_ptr);
+	extract_indices.setIndices(indices_current);
+	extract_indices.filter(*cloud_keypoints_current);
+
+	// model for ransac
+	bool use_reprojection = true;
+	bool ransac_result = false;
+	vector<int> inliers;
+	Eigen::VectorXf coefs_before_optimization;
+	Eigen::VectorXf coefs_optimized;
+	float ransac_probability = 0.99;
+	float pixel_distance = 5.0; // includes disparity
+	float euclidean_distance = 0.03; // meters
+	int ransac_verbosity = 3;
+	if (use_reprojection) {
+		//typedef POINT_XYZKP ReprojectionPointT;
+		typedef pcl::PointXYZ ReprojectionPointT;
+
+		//setVerbosityLevel(pcl::console::L_DEBUG);
+
+		Eigen::Vector2f focal_lengths(525,525);
+		Eigen::Vector2f centers(320,240);
+		float baseline = 0.075;
+		pcl_peter::G2OStereoProjector<ReprojectionPointT, ReprojectionPointT> projector(focal_lengths, centers, baseline);
+
+		// could probably use PointT and avoid copy
+		pcl::PointCloud<ReprojectionPointT>::Ptr source_xyz_cloud(new pcl::PointCloud<ReprojectionPointT>);
+		pcl::PointCloud<ReprojectionPointT>::Ptr target_xyz_cloud(new pcl::PointCloud<ReprojectionPointT>);
+		pcl::copyPointCloud(*cloud_keypoints_current, *source_xyz_cloud);
+		pcl::copyPointCloud(*cloud_keypoints_previous, *target_xyz_cloud);
+
+		// no indexing allowed for now
+		assert(matches_culled.size() == source_xyz_cloud->points.size());
+		assert(matches_culled.size() == target_xyz_cloud->points.size());
+
+		// todo: set up keypoint clouds and pass em in
+		pcl::PointCloud<ReprojectionPointT>::Ptr source_keypoint_cloud(new pcl::PointCloud<ReprojectionPointT>);
+		pcl::PointCloud<ReprojectionPointT>::Ptr target_keypoint_cloud(new pcl::PointCloud<ReprojectionPointT>);
+		// currently assume no-one will look at header and related fields
+		source_keypoint_cloud->resize(matches_culled.size());
+		target_keypoint_cloud->resize(matches_culled.size());
+
+		for (unsigned int m = 0; m < matches_culled.size(); m++) {
+			const cv::DMatch & match = matches_culled[m];
+			const int & source_index = match.queryIdx;
+			const int & target_index = match.trainIdx;
+			const cv::KeyPoint & source_cv_keypoint = frame_current.kp.keypoints[source_index];
+			const cv::KeyPoint & target_cv_keypoint = frame_previous.kp.keypoints[target_index];
+			// coordinate switch? NO!
+			source_keypoint_cloud->points[m].x = source_cv_keypoint.pt.x;
+			source_keypoint_cloud->points[m].y = source_cv_keypoint.pt.y;
+			target_keypoint_cloud->points[m].x = target_cv_keypoint.pt.x;
+			target_keypoint_cloud->points[m].y = target_cv_keypoint.pt.y;
+		}
+		projector.fillInZ(*source_xyz_cloud, *source_keypoint_cloud);
+		projector.fillInZ(*target_xyz_cloud, *target_keypoint_cloud);
+
+		pcl_peter::SampleConsensusModelRegistrationReprojection<ReprojectionPointT, ReprojectionPointT>::Ptr model(
+				new pcl_peter::SampleConsensusModelRegistrationReprojection<ReprojectionPointT, ReprojectionPointT>(
+						source_xyz_cloud,
+						source_keypoint_cloud,
+						projector));
+		model->setInputTarget(target_xyz_cloud, target_keypoint_cloud);
+
+		// ransac
+		pcl::RandomSampleConsensus<ReprojectionPointT>::Ptr ransac(
+				new pcl::RandomSampleConsensus<ReprojectionPointT>(model));
+		ransac->setDistanceThreshold(pixel_distance);
+		ransac->setProbability(ransac_probability);
+		ransac_result = ransac->computeModel(ransac_verbosity);
+		ransac->getInliers(inliers);
+		ransac->getModelCoefficients(coefs_before_optimization);
+		model->optimizeModelCoefficients(inliers, coefs_before_optimization, coefs_optimized);
+	}
+	else {
+		pcl::SampleConsensusModelRegistration<PointT>::Ptr model(new pcl::SampleConsensusModelRegistration<PointT>(cloud_keypoints_current));
+		model->setInputTarget(cloud_keypoints_previous);
+
+		// ransac
+		pcl::RandomSampleConsensus<PointT>::Ptr ransac(new pcl::RandomSampleConsensus<PointT>(model));
+		ransac->setDistanceThreshold(euclidean_distance);
+		ransac->setProbability(ransac_probability);
+		ransac_result = ransac->computeModel(ransac_verbosity);
+		ransac->getInliers(inliers);
+		ransac->getModelCoefficients(coefs_before_optimization);
+		model->optimizeModelCoefficients(inliers, coefs_before_optimization, coefs_optimized);
+	}
+
+	cout << "inliers: " << inliers.size() << endl;
+
+	vector< cv::DMatch > inlier_matches;
+	for (unsigned int i = 0; i < inliers.size(); i++) {
+		inlier_matches.push_back(matches_culled[inliers[i]]);
+	}
+	// Draw inlier matches
+	cv::Mat inlier_match_image;
+	drawMatches( frame_current.image_color, frame_current.kp.keypoints,
+				 frame_previous.image_color, frame_previous.kp.keypoints,
+				 inlier_matches, inlier_match_image );
+	cv::imshow(window_3, inlier_match_image);
+
+	assert(coefs_optimized.size() == 16);
+	Eigen::Affine3f transform;
+	transform.matrix().row (0) = coefs_optimized.segment<4>(0);
+	transform.matrix().row (1) = coefs_optimized.segment<4>(4);
+	transform.matrix().row (2) = coefs_optimized.segment<4>(8);
+	transform.matrix().row (3) = coefs_optimized.segment<4>(12);
+
+	transform_result = transform;
+
+	return (inliers.size() >= 10);
+}
+
+void getProjectedCloudImage(CloudT::Ptr cloud_ptr, cv::Mat& result, cv::Mat& result_mask) {
+	int rows = cloud_ptr->height;
+	int cols = cloud_ptr->width;
+
+	Eigen::Vector2f f(525,525);
+	Eigen::Vector2f c(cols / 2.0, rows / 2.0);
+    Eigen::Matrix3f proj_m = getProjectionMatrix(f, c);
+
+    result = cv::Mat::zeros(rows, cols, CV_8UC3);
+    result_mask = cv::Mat::zeros(rows, cols, CV_8UC1);
+
+    // could use z_buffer for mask at end
+    cv::Mat z_buffer(rows, cols, CV_32FC1, cv::Scalar(10000));
+
+    for (int row = 0; row < rows; row++) {
+    	for (int col = 0; col < cols; col++) {
+    		PointT& p = cloud_ptr->at(col, row);
+    		if (!pcl_isnan(p.z)) {
+    			Eigen::Vector3f projected = proj_m * p.getVector3fMap();
+    			projected /= projected[2];
+    			int row_p = round(projected[1]);
+    			int col_p = round(projected[0]);
+
+    			// debug
+				if (row_p >= 0 && row_p < rows && col_p >= 0 && col_p < cols) {
+					if (p.z < z_buffer.at<float>(row_p, col_p)) {
+						result.at<cv::Vec3b>(row_p, col_p)[0] = p.b;
+						result.at<cv::Vec3b>(row_p, col_p)[1] = p.g;
+						result.at<cv::Vec3b>(row_p, col_p)[2] = p.r;
+						z_buffer.at<float>(row_p, col_p) = p.z;
+						result_mask.at<uchar>(row_p, col_p) = 255;
+					}
+    			}
+				else {
+					//cout << "oob: " << row_p << "," << col_p << endl;
+				}
+    		}
+    	}
+    }
+}
+
+/*
+ * An alternative to the above (for use with gradient images as well...)
+ * Puts cloud_ptr->size() values in result
+ */
+void getProjectedCloudInterpolatedValues(CloudT::Ptr cloud_ptr,
+		const cv::Mat& image_intensities,
+		Eigen::VectorXf& result,
+		vector<int>& indices_used,
+		cv::Mat& debug_image) {
+	assert(image_intensities.type() == CV_32F);
+	int rows = cloud_ptr->height;
+	int cols = cloud_ptr->width;
+
+	debug_image = cv::Mat::zeros(rows, cols, CV_32F);
+
+	// prepare a result for every cloud point
+	result = Eigen::VectorXf::Zero(cloud_ptr->size());
+	indices_used.reserve(cloud_ptr->size());
+
+	Eigen::Vector2f f(525,525);
+	Eigen::Vector2f c(cols / 2.0, rows / 2.0);
+    Eigen::Matrix3f proj_m = getProjectionMatrix(f, c);
+
+    for (size_t p_index = 0; p_index < cloud_ptr->size(); p_index++) {
+    	PointT& p = cloud_ptr->points[p_index];
+    	if (!pcl_isnan(p.z)) {
+			Eigen::Vector3f projected = proj_m * p.getVector3fMap();
+			projected /= projected[2];
+			float& row_p = projected[1];
+			float& col_p = projected[0];
+
+			// maybe avoid this check?
+			if (row_p >= 0 && row_p < rows && col_p >= 0 && col_p < cols) {
+				// get the bilinear sampled color / intensity
+				cv::Mat sampled_patch;
+				// SWAP AGAIN??
+				cv::getRectSubPix(image_intensities, cv::Size(1,1), cv::Point2f(col_p, row_p), sampled_patch);
+				float sampled_intensity = sampled_patch.at<float>(0,0);
+				result[p_index] = sampled_intensity;
+				indices_used.push_back(p_index);
+
+				debug_image.at<float>(row_p, col_p) += sampled_intensity;
+    		}
+			else {
+				//cout << "oob: " << row_p << "," << col_p << endl;
+			}
+    	}
+    }
+}
+
+void keepValuesForIndices(const Eigen::VectorXf& source_values, const vector<int>& indices, Eigen::VectorXf& result)
+{
+	result = Eigen::VectorXf::Zero(source_values.size());
+	for (size_t i = 0; i < indices.size(); i++) {
+		const int& index = indices[i];
+		result[index] = source_values[index];
+	}
+}
+
+void convertColorImageToEigenIntensityVector(const cv::Mat& image_color, Eigen::VectorXf& intensity_vector)
+{
+	cv::Mat image_float;
+	image_color.convertTo(image_float, CV_32F, 1.0/255.0);
+	cv::Mat image_gray;
+	cv::cvtColor(image_float, image_gray, CV_BGR2GRAY);
+	cv::Mat cloud_gray_image_vector = image_gray.reshape(1, image_gray.rows * image_gray.cols);
+	cv::cv2eigen(cloud_gray_image_vector, intensity_vector);
+}
+
+/*
+ * Puts cloud_ptr->size() values in result
+*/
+void getProjectedCloudInterpolatedDifference(CloudT::Ptr cloud_ptr,
+		const Eigen::VectorXf& cloud_point_intensities,
+		const cv::Mat& image_intensities,
+		Eigen::VectorXf& result,
+		cv::Mat& debug_image) {
+	Eigen::VectorXf projected_values_f;
+	vector<int> indices_used;
+	cv::Mat debug_image_ignore;
+	getProjectedCloudInterpolatedValues(cloud_ptr, image_intensities, projected_values_f, indices_used, debug_image_ignore);
+	// hmmm...need to correctly leave out points that are nan or project outside image...
+	Eigen::VectorXf cloud_intensities_for_indices;
+	keepValuesForIndices(cloud_point_intensities, indices_used, cloud_intensities_for_indices);
+
+	assert(indices_used.size() > 0);
+	assert(cloud_intensities_for_indices[indices_used[0]] == cloud_point_intensities[indices_used[0]]);
+
+//	cout << "cloud_intensities_for_indices: " << cloud_intensities_for_indices.transpose().head(100) << endl;
+//	cout << "projected_values_f: " << projected_values_f.transpose().head(100) << endl;
+
+	// notes use image - cloud
+	result = projected_values_f - cloud_intensities_for_indices;
+
+	// This debug image is from the "perspective" of the cloud
+	cv::Mat result_cv;
+	cv::eigen2cv(result, result_cv);
+	debug_image = result_cv.reshape(1, cloud_ptr->height);
+
+
+	/*
+	for (size_t i = 0; i < result.size(); i++) {
+		if (fabs(result[i]) > 0.01) {
+			cout << i << ": " << result[i] << endl;
+		}
+	}
+	*/
+
+	/*
+	for (size_t j = 0; j < indices_used.size(); j++) {
+		size_t i = indices_used[j];
+		if (fabs(result[i]) > 0.01) {
+			cout << i << ": " << result[i] << endl;
+		}
+	}
+	*/
+	//cout << "indices used: " << indices_used.size() << endl;
+
+}
+
+/*
+ * The result of this correctly has 0 error for masked pixels
+ */
+void getColorDifference(const cv::Mat & image_1, const cv::Mat & image_2, const cv::Mat & mask, cv::Mat & result)
+{
+	cv::Mat image_1_float, image_2_float;
+	image_1.convertTo(image_1_float, CV_32F);
+	image_2.convertTo(image_2_float, CV_32F);
+	cv::Mat image_1_mono, image_2_mono;
+	cv::cvtColor(image_1_float, image_1_mono, CV_BGR2GRAY);
+	cv::cvtColor(image_2_float, image_2_mono, CV_BGR2GRAY);
+	result = cv::Mat::zeros(image_1.size(), CV_32FC1);
+	cv::subtract(image_1_mono, image_2_mono, result, mask);
+}
+
+class DenseColorFunctor
+{
+public:
+	  typedef double Scalar;
+	  enum {
+	    InputsAtCompileTime = Eigen::Dynamic,
+	    ValuesAtCompileTime = Eigen::Dynamic
+	  };
+	  typedef Eigen::Matrix<Scalar,InputsAtCompileTime,1> InputType;
+	  typedef Eigen::Matrix<Scalar,ValuesAtCompileTime,1> ValueType;
+	  typedef Eigen::Matrix<Scalar,ValuesAtCompileTime,InputsAtCompileTime> JacobianType;
+
+	CloudT::Ptr cloud_ptr_;
+	cv::Mat cloud_image_;
+	Eigen::VectorXf cloud_gray_eigen_; // also cache cloud intensities?
+	cv::Mat image_;
+	cv::Mat image_gray_float_;
+	cv::Mat gradient_x_;
+	cv::Mat gradient_y_;
+
+	/*
+	 * Currently assumes cloud_ptr is organized and image_for_cloud is the associated color image
+	 */
+	DenseColorFunctor(CloudT::Ptr cloud_ptr, cv::Mat cloud_image, cv::Mat image_to_match) :
+	cloud_ptr_(cloud_ptr),
+	cloud_image_(cloud_image),
+	image_(image_to_match)
+	{
+		// todo: take existing float image
+		cv::Mat image_float;
+		image_.convertTo(image_float, CV_32F, 1.0/255.0);
+		cv::cvtColor(image_float, image_gray_float_, CV_BGR2GRAY);
+		// last argument is aperture (3 is default, -1 means sharr, 1 means 1x3 w/no smoothing)
+		// NOTE: try normalizing with scale param
+		float scale_for_sobel_neg1 = 1.0 / 32.0; // sharr 3,10,3
+		float scale_for_sobel_3 = 1.0 / 8.0; // sobel 1,2,1
+		float scale_for_sobel_1 = 1.0 / 2.0; // -1,0,1
+		cv::Sobel(image_gray_float_, gradient_x_, CV_32F, 1, 0, 3, scale_for_sobel_3);
+		cv::Sobel(image_gray_float_, gradient_y_, CV_32F, 0, 1, 3, scale_for_sobel_3);
+
+		// grab the grayscale floats from the cloud for cloud_gray_
+		convertColorImageToEigenIntensityVector(cloud_image_, cloud_gray_eigen_);
+	}
+
+	int values() const {
+		return cloud_ptr_->size();
+	}
+
+	int operator() (const InputType &x, ValueType &fvec) const {
+		cout << "functor operator(): " << endl;
+		cout << "on x: " << x.transpose() << endl;
+
+		// dup
+		pcl::WarpPointRigid6D<PointT, PointT> warp_point;
+		Eigen::VectorXf params = x.cast<float> ();
+		warp_point.setParam (params);
+		Eigen::Matrix4f x_matrix = warp_point.getTransform();
+		Eigen::Affine3f x_transform(x_matrix);
+
+		Eigen::VectorXf errors_f;
+
+		// apply to the point cloud
+		CloudT::Ptr transformed_cloud_ptr(new CloudT);
+		pcl::transformPointCloud(*cloud_ptr_, *transformed_cloud_ptr, x_transform);
+
+		// get the error
+		cv::Mat debug_image;
+		getProjectedCloudInterpolatedDifference(transformed_cloud_ptr, cloud_gray_eigen_, image_gray_float_, errors_f, debug_image);
+
+		fvec = errors_f.cast<double>();
+
+		cout << "x_matrix:\n" << x_matrix << endl;
+		cout << "fvec.squaredNorm(): " << fvec.squaredNorm() << endl;
+
+		// I think this means "ok"
+		return 0;
+	}
+
+	/*
+	 * Attempt analytical jacobian
+	 *
+	 * This is still broken
+	 */
+	int df (const InputType &x, JacobianType &jmat)
+	{
+		// first convert input to a useful transform
+		// dup
+		pcl::WarpPointRigid6D<PointT, PointT> warp_point;
+		Eigen::VectorXf params = x.cast<float> ();
+		warp_point.setParam (params);
+		Eigen::Matrix4f x_matrix = warp_point.getTransform();
+		Eigen::Affine3f x_transform(x_matrix);
+
+		// apply to the point cloud
+		CloudT::Ptr transformed_cloud_ptr(new CloudT);
+		pcl::transformPointCloud(*cloud_ptr_, *transformed_cloud_ptr, x_transform);
+
+		// zero out jmat
+		jmat.setZero();
+
+		// precompute I(p_x, p_y) - P_c)
+		Eigen::VectorXf proj_differences;
+		cv::Mat debug_image;
+		getProjectedCloudInterpolatedDifference(transformed_cloud_ptr, cloud_gray_eigen_, image_gray_float_, proj_differences, debug_image);
+
+		// precompute IGx and IGy(p_x, p_y)
+		Eigen::VectorXf g_x, g_y;
+		vector<int> indices_used;
+		cv::Mat debug_g_x, debug_g_y;
+		getProjectedCloudInterpolatedValues(transformed_cloud_ptr, gradient_x_, g_x, indices_used, debug_g_x);
+		getProjectedCloudInterpolatedValues(transformed_cloud_ptr, gradient_y_, g_y, indices_used, debug_g_y);
+		cv::imshow(window_2, debug_g_x);
+		cv::imshow(window_3, debug_g_y);
+
+		// loop over indices used
+		for (size_t i = 0; i < indices_used.size(); i++) {
+			const int& p_index = indices_used[i];
+			PointT& p = transformed_cloud_ptr->points[p_index];
+			// do you want 4d?
+			Eigen::Vector3f p_3d = p.getVector3fMap();
+			// no, you want the transformed points!
+
+			// jacobian of 3d position with respect to params
+			Eigen::MatrixXf j_3d_x = Eigen::MatrixXf::Zero(3,6);
+			j_3d_x.block(0,0,3,3) = Eigen::Matrix3f::Identity();
+			Eigen::Matrix3f j_quat = Eigen::Matrix3f::Zero(3,3);
+			j_quat(0,1) = p_3d.z();
+			j_quat(0,1) = -p_3d.z();
+			j_quat(0,2) = -p_3d.y();
+			j_quat(2,0) = p_3d.y();
+			j_quat(1,2) = p_3d.x();
+			j_quat(2,1) = -p_3d.x();
+			// I believe it's x2??
+			j_quat = 2 * j_quat;
+			j_3d_x.block(0,3,3,3) = j_quat;
+
+			// jacobian of projection relative to 3d position
+			Eigen::Vector2f f(525,525);
+			//Eigen::Vector2f c(320,240);
+			Eigen::MatrixXf j_proj_3d = Eigen::MatrixXf::Zero(2,3);
+			j_proj_3d(0,0) = f(0) / p_3d.z();
+			j_proj_3d(1,1) = f(1) / p_3d.z();
+			j_proj_3d(0,2) = - p_3d.x() * f(0) / (p_3d.z() * p_3d.z());
+			j_proj_3d(1,2) = - p_3d.y() * f(1) / (p_3d.z() * p_3d.z());
+
+			// jacobian of error relative to pixel coordinates
+			Eigen::MatrixXf j_error_proj = Eigen::MatrixXf::Zero(1,2);
+			// 2(I(p_x, p_y) - P_c) * GIx(p_x, p_y)
+			float de_drow = 2 * proj_differences[p_index] * g_y[p_index];
+			float de_dcol = 2 * proj_differences[p_index] * g_x[p_index];
+			j_error_proj(0,0) = de_dcol;
+			j_error_proj(0,1) = de_drow;
+
+			Eigen::MatrixXf jacobian_row = j_error_proj * j_proj_3d * j_3d_x;
+			// debug:
+//			cout << "j_error_proj: \n" << j_error_proj  << endl;
+//			cout << "j_proj_3d: \n" << j_proj_3d  << endl;
+//			cout << "j_3d_x: \n" << j_3d_x  << endl;
+//			cout << "jacobian_row: \n" << jacobian_row << endl;
+
+			jmat.row(p_index) = jacobian_row.row(0).cast<double>();
+
+			// debug
+			//cout << "jmat.row(p_index): " << jmat.row(p_index) << endl;
+		}
+		return 0;
+	}
+};
+
+
+bool getRelativeTransformUsingDenseColor(bool use_numerical_jacobian, const Frame& frame_previous, const Frame& frame_current, Eigen::Affine3f & transform_result) {
+	//unsigned int rows = frame_current.cloud_ptr->height;
+	//unsigned int cols = frame_current.cloud_ptr->width;
+
+	// could initialize with something other than the identity here:
+	unsigned int n_unknowns = 6;
+	Eigen::VectorXd x (n_unknowns);
+	x.setZero ();
+
+	// try blurring the current image
+	cv::Mat current_image_blurred;
+	cv::GaussianBlur(frame_current.image_color, current_image_blurred, cv::Size(13,13), 0);
+	DenseColorFunctor functor(frame_previous.cloud_ptr, frame_previous.image_color, current_image_blurred);
+	int info = -100;
+	if (use_numerical_jacobian) {
+		Eigen::NumericalDiff<DenseColorFunctor> num_diff (functor);
+		Eigen::LevenbergMarquardt<Eigen::NumericalDiff<DenseColorFunctor>, double> lm (num_diff);
+		info = lm.minimize (x);
+		cout << "final fvec.squaredNorm(): " << lm.fvec.squaredNorm() << endl;
+		cout << "fvec.norm(): " << lm.fvec.norm() << endl;
+	}
+	else {
+		// analytic jacobian
+		Eigen::LevenbergMarquardt<DenseColorFunctor, double> lm (functor);
+		info = lm.minimize (x);
+		cout << "final fvec.squaredNorm(): " << lm.fvec.squaredNorm() << endl;
+		cout << "fvec.norm(): " << lm.fvec.norm() << endl;
+	}
+
+	cout << "lm code: " << info << endl;
+	cout << "params: " << x.transpose() << endl;
+
+	// could use the functor here to avoid dup
+	pcl::WarpPointRigid6D<PointT, PointT> warp_point;
+	Eigen::VectorXf x_f = x.cast<float>();
+	warp_point.setParam(x_f);
+	Eigen::Matrix4f result_matrix = warp_point.getTransform();
+
+	// note I matched frame_previous cloud to current image, so invert transform
+	transform_result.matrix() = result_matrix;
+	transform_result = transform_result.inverse();
+
+	return true;
+}
+
+#ifdef USE_SIMPLE_REG_MAIN
+//int main (int argc, char** argv)
+int _tmain(int argc, _TCHAR* argv[])
+{
+	if (argc != 2) {
+		cout << "usage: <exe> <folder>" << endl;
+		exit(1);
+	}
+
+    pcl::visualization::CloudViewer viewer("Cloud Viewer");
+    cv::namedWindow(window_1);
+    cv::namedWindow(window_2);
+    cv::namedWindow(window_3);
+    cv::namedWindow(window_4);
+    cv::namedWindow(window_5);
+    cv::namedWindow(window_6);
+    cv::namedWindow(window_7);
+
+    fs::path folder = argv[1];
+	if (!fs::exists(folder)) {
+		cout << "invalid folder: " << folder << endl;
+		exit(1);
+	}
+    fs::directory_iterator file_iter_end;
+    vector<fs::path> files(fs::directory_iterator(folder), file_iter_end);
+    sort(files.begin(), files.end());
+
+    Frame frame_current;
+    Frame frame_previous;
+    Eigen::Affine3f global_transform;
+    global_transform.setIdentity();
+    CloudT::Ptr global_cloud(new CloudT);
+    CloudT::Ptr first_cloud;
+
+    for(vector<fs::path>::iterator file_iter = files.begin(); file_iter != files.end(); ++file_iter) {
+    	// skip all non pcds
+    	fs::path file = *file_iter;
+    	if (file.extension() != ".pcd") continue;
+    	cout << file << endl;
+
+    	bool hold_this_frame = true;
+
+    	// see if we have a previous frame
+    	frame_previous = frame_current;
+    	bool have_previous = (bool) frame_previous.cloud_ptr;
+
+    	// load cloud
+    	frame_current.cloud_ptr.reset(new CloudT);
+		if (pcl::io::loadPCDFile (file.string(), *frame_current.cloud_ptr)) {
+			cout << "load failed for file: " << file.string() << endl;
+			exit(1);
+		}
+    	unsigned int rows = frame_current.cloud_ptr->height;
+    	unsigned int cols = frame_current.cloud_ptr->width;
+
+    	addImagesToFrame(frame_current);
+
+    	cv::imshow(window_1, frame_current.image_color);
+
+    	addFeaturesToFrame(frame_current);
+
+		if (have_previous) {
+#if 0
+			// HACK HACK HACK
+			cout << "HACK!!!" << endl;
+			// note these are not deep copies
+			frame_previous = frame_current;
+			frame_previous.cloud_ptr.reset(new CloudT);
+
+			Eigen::Affine3f fake_transform(Eigen::AngleAxisf(0,Eigen::Vector3f(1,0,0)));
+			Eigen::Vector3f fake_translation(0.005,0,0);
+			fake_transform.pretranslate(fake_translation);
+			cout << "applying fake transform: \n" << fake_transform.matrix() << endl;
+			pcl::transformPointCloud(*frame_current.cloud_ptr, *frame_previous.cloud_ptr, fake_transform);
+#endif
+
+			// show the color difference according to the identity transform
+			cv::Mat projected_colors;
+			cv::Mat projected_colors_mask;
+			cv::Mat projected_color_difference;
+			cv::Mat projected_color_difference_to_display;
+
+			getProjectedCloudImage(frame_previous.cloud_ptr, projected_colors, projected_colors_mask);
+	    	cv::imshow(window_4, projected_colors);
+
+			// new diff way:
+			// Need to do this once:
+			Eigen::VectorXf previous_cloud_intensity_vector;
+			convertColorImageToEigenIntensityVector(frame_previous.image_color, previous_cloud_intensity_vector);
+
+	    	Eigen::VectorXf interpolated_error;
+	    	getProjectedCloudInterpolatedDifference(frame_previous.cloud_ptr, previous_cloud_intensity_vector, frame_current.image_gray_float, interpolated_error, projected_color_difference);
+	    	projected_color_difference.convertTo(projected_color_difference_to_display, CV_8U, 255, 128);
+	    	cv::imshow(window_5, projected_color_difference_to_display);
+
+			// get the relative transform
+			Eigen::Affine3f transform_relative;
+			bool success = false;
+			bool use_features = true;
+			bool use_numerical_jacobian = true;
+			if (use_features) {
+				success = getRelativeTransformUsingFeatures(frame_previous, frame_current, transform_relative);
+			}
+			else {
+				success = getRelativeTransformUsingDenseColor(use_numerical_jacobian, frame_previous, frame_current, transform_relative);
+			}
+			if (!success) hold_this_frame = true;
+
+			// show the previous cloud
+			CloudT::Ptr transformed_previous(new CloudT);
+			pcl::transformPointCloud(*frame_previous.cloud_ptr, *transformed_previous, global_transform);
+			viewer.showCloud(transformed_previous, "transformed_previous");
+
+			// update global pose
+			global_transform = global_transform * transform_relative;
+
+			// show the new cloud (appropriately transformed)
+			CloudT::Ptr transformed_current(new CloudT);
+			pcl::transformPointCloud(*frame_current.cloud_ptr, *transformed_current, global_transform);
+	    	viewer.showCloud(transformed_current, "transformed_current");
+
+	    	// There's a double inverse when doing dense color
+	    	CloudT::Ptr previous_cloud_transformed_relative(new CloudT);
+	    	pcl::transformPointCloud(*frame_previous.cloud_ptr, *previous_cloud_transformed_relative, transform_relative.inverse());
+
+	    	// project the previous cloud (or more generally the model) into the current image.
+	    	// this requires inverting the transform (as the standard transform_relative lines up the current cloud with the previous cloud)
+	    	// re-using the same cv::mats
+	    	getProjectedCloudImage(previous_cloud_transformed_relative, projected_colors, projected_colors_mask);
+	    	cv::imshow(window_6, projected_colors);
+
+	    	getProjectedCloudInterpolatedDifference(previous_cloud_transformed_relative, previous_cloud_intensity_vector, frame_current.image_gray_float, interpolated_error, projected_color_difference);
+	    	projected_color_difference.convertTo(projected_color_difference_to_display, CV_8U, 255, 128);
+	    	cv::imshow(window_7, projected_color_difference_to_display);
+
+		} // have_previous
+
+#if 0
+    	if (!first_cloud) {
+    		first_cloud = frame_current.cloud_ptr;
+    		viewer.showCloud(first_cloud, "first");
+    	}
+#endif
+
+    	// hacky
+    	if (hold_this_frame) {
+    		cv::waitKey();
+    	}
+    	else {
+    		cv::waitKey(10);
+    	}
+    }
+    exit(0);
+
+    //use the following functions to get access to the underlying more advanced/powerful
+    //PCLVisualizer
+#if 0
+
+    //This will only get called once
+    //viewer.runOnVisualizationThreadOnce (viewerOneOff);
+    //This will get called once per visualization iteration
+    viewer.runOnVisualizationThread (viewerPsycho);
+
+    while (!viewer.wasStopped ())
+    {
+    //you can also do cool processing here
+    //FIXME: Note that this is running in a separate thread from viewerPsycho
+    //and you should guard against race conditions yourself...
+    user_data++;
+    }
+    return 0;
+#endif
+}
+
+#endif // USE_SIMPLE_REG_MAIN
+

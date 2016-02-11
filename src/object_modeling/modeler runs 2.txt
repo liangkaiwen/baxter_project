@@ -1,0 +1,905 @@
+// data sets:
+--input "C:\devdata\oni\espresso-huge"
+--input "C:\devdata\oni\espresso-easy"
+--input "C:\devdata\oni\kevin\kevin-2"
+
+before scopetime removal: 163
+after scopetime removal: 142!!!!  Jesus Christ!
+after eliminating all cout (to file: ~105)  Double Jebus!
+
+// painting
+--input C:\devdata\oni\painting-water --fonipng --max 3 --fi 3 --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-max-age-loop 50  --pv-max-mb 500 --white-bg  --output movie-painting --c-show-render
+
+--save-poses 
+
+--cdi --save-cdi
+--seg-di --save-seg-di
+
+// espresso-easy
+--input C:\devdata\oni\espresso-easy --fonipng --max 3 --fi 3 --pv --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 50  --save-poses --pv-max-mb 500 --white-bg  --c-show-render --output movie-espresso 
+
+--pv-cov --disable-cout-buffer
+
+// kevin 2 (shape only)
+--input "C:\devdata\oni\kevin\kevin-2"  --fonipng  --max 4 --pv --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256  --pv-edge-loop-factor 100  --save-poses --pv-max-mb 500 --white-bg  --c-show-render --output kevin-2 --wc 0
+
+// walk-1
+--input "E:\devdata\oni\peter-richard-walk-1.oni.dump" --max 4 --fonipng --pv --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 64  --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum   --save-poses --pv-max-mb 500 --white-bg  --c-show-render --output walk-1 --pause --seg-di --pv-cov
+
+
+////////////////////////////
+// Timing test for graphics card
+--input C:\devdata\oni\painting-water --fonipng --max 3 --fi 3 --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-max-age-loop 50  --pv-max-mb 500 --white-bg  --output movie-painting --disable-viewer > timing-560-work.txt
+
+560 >> 105 ms (~6 iter)
+560-huber >> 121 ms (~10 iters)
+
+--c-show-render
+
+
+//////////////// Demo:
+--input C:\devdata\oni\painting-water --fonipng --max 3 --fi 3 --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-max-age-loop 50  --pv-max-mb 500 --white-bg  --output demo-painting --c-show-render
+
+// pvs
+--input C:\devdata\oni\espresso-easy --fonipng --max 3 --fi 3 --pv --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-max-age-loop 50  --pv-max-mb 300 --white-bg  --c-show-render --output demo-espresso
+
+// grid
+ --input C:\devdata\oni\espresso-easy --fonipng --fi 3 --max 4  --pv --pv-show-graph-edges  --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di  --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256  --pv-edge-loop-factor 100 --pv-max-age-loop 100000 --pv-max-mb 300 --white-bg  --c-show-render --output demo-grids --pg --pg-border 2  --pv-show-edges 
+ 
+ 
+ ///////////////////////
+// whatever the fuck this is:
+--input C:\devdata\oni\kevin\kevin-2 --fonipng --max 3 --fi 3 --pv  --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-edge-loop-factor 100 --pv-max-age-loop 50  --pv-max-mb 300 --white-bg  --c-show-render --output pg-debug --pg --pg-border 2 --fe 1500 > pg-test.txt
+
+--pv-show-graph-edges
+--pv-loop 
+--pg-fast
+ 
+ 
+/////////////////////
+//  workshop espresso
+--c-show-render
+--pv-debug-vis
+--pv-loop-di 
+// timing:
+--input C:\devdata\oni\espresso-easy --fonipng --max 3 --fi 3 --pv --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-max-age-loop 50  --pv-max-mb 300 --white-bg --output pg-debug --pg --pg-border 2 --disable-viewer > pg-timing.txt
+--input C:\devdata\oni\espresso-easy --fonipng --max 3 --fi 3 --pv --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-max-age-loop 50  --pv-max-mb 300 --white-bg --output pv-debug --disable-viewer --script > pv-timing.txt
+
+// get grid pics:
+--input C:\devdata\oni\espresso-easy --fonipng --max 3 --fi 3 --pv --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-max-age-loop 50  --pv-max-mb 300 --white-bg --output pg-debug --pg --pg-border 2 
+
+// text "covariance" method:  NOPE NOPE NOPE!!!
+--input C:\devdata\oni\espresso-easy --fonipng --max 3 --fi 3 --pv --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-max-age-loop 50  --pv-max-mb 300 --white-bg --output pv-cov --pv-cov
+
+// grids with 64? eh
+--input C:\devdata\oni\espresso-easy --fonipng --max 3 --fi 3 --pv --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-max-age-loop 50  --pv-max-mb 300 --white-bg --output pg-debug --pg --pg-border 2 --pg-size 64
+
+
+
+/////////////////////
+// frieburg?
+--input C:\devdata\freiburg\rgbd_dataset_freiburg1_360\associate.txt
+--input C:\devdata\freiburg\rgbd_dataset_freiburg1_xyz\associate.txt
+--input C:\devdata\freiburg\rgbd_dataset_freiburg2_large_with_loop\associate.txt --ffreiburg --pv  --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-edge-loop-factor 100  --pv-max-mb 300 --white-bg  --c-show-render --output pg-debug --pg --pg-border 2 
+
+--max 3 
+--pv-debug-vis
+--pv-max-age-loop 50 
+--pv-debug-vis
+
+///////////////////////
+// THIN
+--input C:\devdata\oni\thin-new-3 --fonipng --max 1.5 --vs 0.005 --fi 3 --pv --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10   --pv-edge-loop-factor 100 --pv-max-age-loop 50  --pv-max-mb 300 --white-bg  --c-show-render --output active --seg-di
+
+--pv-max-side 256
+--pv-loop
+
+// Thin grid?
+--input C:\devdata\oni\thin-new-3 --fonipng --max 1.5 --vs 0.005 --fi 3 --pv --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10   --pv-edge-loop-factor 100 --pv-max-age-loop 50  --pv-max-mb 300 --white-bg  --c-show-render --output thin-grid  --pg --pg-border 2  
+
+// Thin with lenna?
+--input C:\devdata\oni\lenna-1 --fonipng --max 1.5 --vs 0.005 --fi 3 --pv --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10   --pv-edge-loop-factor 100 --pv-max-age-loop 50  --pv-max-mb 300 --white-bg  --c-show-render --output active --seg-di
+
+// compare grid
+--input C:\devdata\oni\lenna-1 --fonipng --max 1.5 --vs 0.005 --fi 3 --pv --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10   --pv-edge-loop-factor 100 --pv-max-age-loop 50  --pv-max-mb 300 --white-bg  --c-show-render --output active --pg --pg-border 2
+
+///////////////////////
+// THE FUCKING TRUCK
+--input C:\devdata\truck --max 1.5 --vs 0.0025 --pv  --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5  --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10   --pv-edge-loop-factor 100   --pv-max-mb 300 --white-bg  --c-show-render --output active --mo --mh --mdi  --cam-f 540 --cam-fix --pv-loop --pv-be 0.02 --pv-max-age-loop 10
+
+--pv-max-age-loop 50
+--pv-be 0.1
+--pg --pg-border 2 
+--pv-show-graph-edges
+
+////////////////////
+// new timing:
+// GPU (note you left Huber on!)
+--input C:\devdata\oni\painting-water --fonipng --max 3 --fi 3 --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-max-age-loop 50  --pv-max-mb 500 --white-bg  --output movie-painting --disable-viewer > timing-gpu-huber.txt
+>>> 122 ms
+--input C:\devdata\oni\painting-water --fonipng --max 3 --fi 3 --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-max-age-loop 50  --pv-max-mb 500 --white-bg  --output movie-painting --disable-viewer > timing-cpu-huber.txt
+>>> 1100 ms
+
+
+////////////////
+// evan test
+--input C:\devdata\evan\for-peter-20130515\robotPushMultiobj1 --fevan --max 1.5 --vs 0.005 --pv --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10   --pv-edge-loop-factor 100 --pv-max-age-loop 50  --pv-max-mb 300 --white-bg  --c-show-render --output active --pg --pg-border 2 --save-poses --fs 300
+--fi 3
+::: 
+start: 1 0 0 0 0.676498 0.510505 -0.506462 
+finish: 0.999967 0.00155311 0.000939691 -0.000292675 0.671851 0.50826 -0.502396 
+
+--input C:\devdata\evan\for-peter-20130515\movingCamWalkBall --fevan --vs 0.02 --pv --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10   --pv-edge-loop-factor 100 --pv-max-age-loop 50  --pv-max-mb 300 --white-bg  --c-show-render --output active --pg --pg-border 2 --save-poses --icfix --cam-zmax 8
+--max 4.0 
+
+
+/////////
+// Demo 5/20
+// live:
+--max 3.0 --vs 0.01 --pv  --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10   --pv-edge-loop-factor 100 --pv-max-age-loop 100000  --pv-max-mb 600 --white-bg  --c-show-render --output active --pg --pg-border 2 --disable-cout-buffer --of --fff
+--pv-max-age-loop 50
+--pv-show-graph-edges
+
+// painting
+--input C:\devdata\oni\painting-water --fonipng --max 3 --fi 3 --pv-show-graph-edges --pv-show-mesh  --oclpath C:\devlibs\object_modeling\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-max-age-loop 50  --pv-max-mb 500 --white-bg  --output demo-painting --c-show-render
+
+// espresso grid (LOOP OPTIONAL AT END)
+ --input C:\devdata\oni\espresso-easy --fonipng --fi 3 --max 4  --pv --pv-show-graph-edges --pv-show-mesh --oclpath C:\devlibs\object_modeling\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di  --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256  --pv-edge-loop-factor 100  --pv-max-mb 300 --white-bg  --c-show-render --output demo-grids --pg --pg-border 2  --pv-loop --pv-max-age-loop 50
+ --pv-loop --pv-max-age-loop 50
+ 
+ // espresso pv (with loop)
+  --input C:\devdata\oni\espresso-easy --fonipng --fi 3 --max 4  --pv --pv-show-graph-edges --pv-show-mesh --oclpath C:\devlibs\object_modeling\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di  --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256  --pv-edge-loop-factor 100  --pv-max-mb 300 --white-bg  --c-show-render --output demo-pvs --pv-loop --pv-max-age-loop 50 --seg-di
+ 
+ // actual opencl path
+ --oclpath C:\devlibs\object_modeling\OpenCLStaticLib
+ --oclpath /home/peter/checkout/object_modeling/OpenCLStaticLib
+ 
+ Speedup??
+ cmake version (cv 2.4.5, cuda 5)
+ Time Elapsed 00:08:09.43
+ 
+ Original SLN (new G2O and cmake):
+ Time Elapsed 00:03:07.80
+ 
+ Original with refactor (LOL):
+ Time Elapsed 00:04:20.90
+
+////////////////
+ // marianna test:
+--output marianna_1 --input C:\devdata\oni\marianna_1.oni.oni.dump --fonipng --max 1.75 --fi 3 --vs 0.002 --pv  --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10   --pv-edge-loop-factor 100 --pv-max-age-loop 100000  --pv-max-mb 600 --white-bg  --c-show-render  --pg --pg-border 2 --disable-viewer --of --fff --script
+
+
+//// depth only fail
+--input C:\devdata\oni\painting-water --fonipng --max 3 --fi 3 --pv-show-graph-edges --pv-show-mesh  --oclpath C:\devlibs\object_modeling\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-max-age-loop 50  --pv-max-mb 500 --white-bg  --output demo-painting --c-show-render --wc 0
+
+//// picture wall?
+--input G:\devdata\intel-10-fs0-picture-wall  --max 3  --pv --pv-show-graph-edges --pv-show-mesh --oclpath C:\devlibs\object_modeling\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di  --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256  --pv-edge-loop-factor 100  --pv-max-mb 300 --white-bg  --c-show-render --output demo-grids --pg --pg-border 2 --vs 0.005 --of --fff --pv-loop -pv-max-age 30
+
+--fi 3
+--pv-loop 
+
+/////////////////////////// demo
+// painting
+--input C:\devdata\oni\painting-water --fonipng --max 3 --fi 3 --pv-show-graph-edges --pv-show-mesh  --oclpath C:\devlibs\object_modeling\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-max-age-loop 50  --pv-max-mb 500 --white-bg  --output demo-painting --c-show-render
+
+// espresso grid (LOOP OPTIONAL AT END)
+ --input C:\devdata\oni\espresso-easy --fonipng --fi 3 --max 4  --pv --pv-show-graph-edges --pv-show-mesh --oclpath C:\devlibs\object_modeling\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di  --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256  --pv-edge-loop-factor 100  --pv-max-mb 300 --white-bg  --c-show-render --output demo-grids --pg --pg-border 2  --pv-loop --pv-max-age-loop 50 
+ --pv-loop --pv-max-age-loop 50
+ 
+ // espresso pv (with loop)
+  --input C:\devdata\oni\espresso-easy --fonipng --fi 3 --max 4  --pv --pv-show-graph-edges --pv-show-mesh --oclpath C:\devlibs\object_modeling\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1 --pv-loop-di  --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256  --pv-edge-loop-factor 100  --pv-max-mb 300 --white-bg  --c-show-render --output demo-pvs --pv-loop --pv-max-age-loop 50 --seg-di
+
+
+
+
+///////////// new
+--pcd C:\devdata\intel-10-fs0-picture-wall
+--png C:\devdata\oni\painting-water
+--png C:\devdata\oni\espresso-easy
+--test_io
+--test_set_weights 0
+--test_mesh_timing
+--first_frame_centroid
+--f // problems for save load currently
+--pause_after_loop_closure
+--loop_closure_save_meshes_always
+--max_mb_system 1000
+--max_mb_gpu 300
+--merge_after_closure
+--merge_at_end
+--loop_closure_edge_strength
+--cl_cpu --cli
+
+> log_debug.txt
+
+
+// LIVE (loop)
+--max 3 --mt grid --loop_closure --max_mb_system 1000 --f --min_age 20 --merge_after_closure --loop_closure_save_meshes_always
+
+// note: was --min_age 10
+
+// good test on espresso
+--png C:\devdata\oni\espresso-easy --frame_increment 5 --f --max 3 --mt grid --loop_closure --max_mb_system 1000 --max_mb_gpu 400 --v --min_age 30 --merge_after_closure --loop_closure_save_meshes_always > log_debug.txt
+
+// oni input
+--oni C:\devdata\oni\peter-room-1.oni --frame_increment 5 --f --max 3 --mt grid --loop_closure --max_mb_system 1000 --max_mb_gpu 400 --v --min_age 100 --merge_after_closure --loop_closure_save_meshes_always > log_debug.txt
+
+// debugging rendering (kevin table)
+--oni "G:\devdata\oni\kevin\openni_recording_1376601347.oni" --max 2 --mt grid --max_mb_system 1000 --max_mb_gpu 200 --v --output output_test --set_color_weights 
+--debug_render
+
+// debug io?
+--png C:\devdata\oni\espresso-easy --frame_increment 5 --max 3  --mt grid --v --output output_test_io --set_color_weights  --max_mb_system 1000 --max_mb_gpu 200 --test_io --f  --loop_closure --min_age 30 --loop_closure_save_meshes_always --merge_after_closure --vs 0.02 > log_debug.txt
+
+--frame_end 30
+
+///////////////////////
+// house
+--oni C:\devdata\oni\peter-house-1.oni --frame_increment 3 --max 3  --mt grid --v --output g:\devrun\output --temp_folder g:\devrun\temp --set_color_weights  --max_mb_gpu 100 --max_mb_system 1000   --min_age 100  --merge_after_closure  --f  --loop_closure 
+
+  > log_debug.txt
+
+  --max_mb_gpu 300
+  --test_clone
+--save_images "save_images"
+--frame_increment 5
+ --vs 0.015 
+ --vs 0.02
+
+ 
+ /// sphere test
+ --oni C:\devdata\oni\peter-house-1.oni --test_single_pose --vx 128 --vy 128 --vz 128 --vs 0.02
+ 
+ /// merge into single test
+--oni C:\devdata\oni\obj5before.oni  --mt grid --v --output g:\devrun\output --temp_folder g:\devrun\temp --set_color_weights  --max_mb_gpu 100 --max_mb_system 1000 --max 2
+
+//////// macbook!!
+--png C:\devdata\oni\espresso-easy --frame_increment 5 --max 3  --mt grid --v  --output c:\devrun\output --temp_folder c:\devrun\temp --set_color_weights --cl_amd_cpu --f
+
+ 
+ // back home...64 bits!
+ --png C:\devdata\oni\espresso-easy --frame_increment 5 --max 3  --mt grid --v  --output g:\devrun\output --temp_folder g:\devrun\temp --set_color_weights --f --loop_closure --max_mb_gpu 500 --min_age 50 --merge_after_closure
+
+// and try house on 64 bits
+--oni C:\devdata\oni\peter-house-1.oni --frame_increment 3 --max 3  --mt grid --v --output g:\devrun\output --temp_folder g:\devrun\temp --set_color_weights  --max_mb_gpu 500  --min_age 100  --merge_after_closure  --f  --loop_closure 
+
+///////////// demo
+// canned
+--oni C:\devdata\oni\espresso-easy.oni --frame_increment 3 --max 3  --mt grid --v --set_color_weights  --max_mb_gpu 300  --min_age 50  --merge_after_closure  --f  --loop_closure --glfw_join
+
+// live
+--max 3  --mt grid --v --set_color_weights  --max_mb_gpu 300 --f 
+
+// live small
+--max 1 --vs 0.0025 --mt grid --v --set_color_weights  --max_mb_gpu 500 --f 
+
+// live single
+--max 3 --v --set_color_weights
+
+// live loop
+--max 3  --mt grid --v --set_color_weights  --max_mb_gpu 300  --min_age 25  --merge_after_closure  --f  --loop_closure 
+///////////////
+
+/// frame 92*3 = 276
+--frame_start 276 --oni C:\devdata\oni\espresso-easy.oni --frame_increment 3 --max 3  --mt grid --v --set_color_weights  --max_mb_gpu 300 --glfw_join --pause_every_frame --align_debug_images
+--f
+Raised color param to 0.1...better!
+
+/////// back to loop closure...
+--oni C:\devdata\oni\espresso-easy.oni --frame_increment 3 --max 3  --mt grid --v --set_color_weights  --max_mb_gpu 300  --min_age 50  --merge_after_closure  --f  --loop_closure --glfw_join --keyframes_only >> log_keyframes.txt
+
+: this shows worse overlap ?  Maybe?
+
+
+/// try handa files
+--handa G:\devdata\handa\living_room_traj0_loop --cam_fx 481.20 --cam_fy 480 --v --set_color_weights --mt grid --max_mb_gpu 300 --f
+--max 5
+
+///////////////////////////////
+//// try house with keyframes
+> log_house_keyframes.txt
+
+--oni C:\devdata\oni\peter-house-1.oni --frame_increment 3 --max 3  --f --mt grid --v --set_color_weights  --max_mb_gpu 300 --output g:\devrun\output --temp_folder g:\devrun\temp  --loop_closure --min_age 100  --merge_after_closure --keyframes_only --glfw_join --frame_start 4000
+: merge is the slowest (90 seconds!!)
+: still have various color problems
+: --frame_start 4000 has no closures
+
+// no loop compare 4000
+--oni C:\devdata\oni\peter-house-1.oni --frame_increment 3 --max 3  --f --mt grid --v --set_color_weights  --max_mb_gpu 300 --output g:\devrun\output --temp_folder g:\devrun\temp  --merge_after_closure --keyframes_only --glfw_join --frame_start 4000 --circle_mask_pixel_radius 320 > log.txt
+: indeed, couch looks "better"
+
+// what was I checking out here?  More house fun...
+--oni C:\devdata\oni\peter-house-1.oni --frame_increment 3 --max 3  --f --mt grid --v --set_color_weights  --max_mb_gpu 300 --output g:\devrun\output --temp_folder g:\devrun\temp  --loop_closure --min_age 100  --merge_after_closure --keyframes_only --glfw_join --frame_start 4000 --circle_mask_pixel_radius 320  > log.txt
+
+
+//// try espresso real quick
+--oni C:\devdata\oni\espresso-easy.oni --frame_increment 3 --max 3  --mt grid --v --set_color_weights  --max_mb_gpu 300  --min_age 50   --f  --loop_closure --glfw_join  --merge_after_closure --keyframes_only --circle_mask_pixel_radius 320
+: do color effects come from merging? Nope, vignetting!
+
+// back to house
+--oni C:\devdata\oni\peter-house-1.oni --frame_increment 3 --max 3  --f --mt grid --v --set_color_weights  --max_mb_gpu 300 --output g:\devrun\output --temp_folder g:\devrun\temp  --merge_after_closure --keyframes_only --glfw_join --circle_mask_pixel_radius 320 --frame_start 3000  --save_mesh_every_n 50 > log.txt
+
+--loop_closure --min_age 100  
+
+--save_mesh_every_n 200
+: investigate poster
+--frame_start 2000
+
+///////////////////////
+//////////// poster debugging
+--oni C:\devdata\oni\peter-house-1.oni 
+--output g:\devrun\output
+
+--oni /home/peter/local/datasets/oni/peter-house-1.oni --output output --frame_increment 3 --max 3  --f --mt grid --v --set_color_weights  --max_mb_gpu 500  --keyframes_only --glfw_join --circle_mask_pixel_radius 320 --frame_start 3000 --frame_end 3500   --loop_closure --min_age 1 --min_fraction 0.2 --loop_closure_edge_strength 10000 --pause_after_loop_closure --loop_closure_debug_images --optimize_iterations 10 > log.txt
+
+--save_mesh_every_n 50
+--merge_after_closure
+
+// "single" volume
+--oni /home/peter/local/datasets/oni/peter-house-1.oni --output "bond-single" --frame_increment 3 --max 3  --f --mt grid --v --set_color_weights  --max_mb_gpu 500  --keyframes_only --circle_mask_pixel_radius 320 --frame_start 3000 --frame_end 3500 --min_fraction 0.2 --optimize_iterations 10 --save_mesh_every_n 50 > log.txt
+
+// min age 1 no loop
+--oni /home/peter/local/datasets/oni/peter-house-1.oni --output "bond-min-age" --frame_increment 3 --max 3  --f --mt grid --v --set_color_weights  --max_mb_gpu 500  --keyframes_only --circle_mask_pixel_radius 320 --frame_start 3000 --frame_end 3500 --min_fraction 0.2 --optimize_iterations 10 --save_mesh_every_n 50 --min_age 1 > log.txt
+
+// min age with loop
+--oni /home/peter/local/datasets/oni/peter-house-1.oni --output "bond-min-age-loop" --frame_increment 3 --max 3  --f --mt grid --v --set_color_weights  --max_mb_gpu 500  --keyframes_only --circle_mask_pixel_radius 320 --frame_start 3000 --frame_end 3500 --min_fraction 0.2 --optimize_iterations 10 --save_mesh_every_n 50  --loop_closure --min_age 1 > log.txt
+
+// min age with loop and lots of keyframes
+--oni /home/peter/local/datasets/oni/peter-house-1.oni --output "bond-min-age-loop-many-key" --frame_increment 3 --max 3  --f --mt grid --v --set_color_weights  --max_mb_gpu 500  --keyframes_only --circle_mask_pixel_radius 320 --frame_start 3000 --frame_end 3500 --min_fraction 0.2 --optimize_iterations 10 --save_mesh_every_n 50  --loop_closure --min_age 1 --keyframe_distance_create 0.01 --glfw_join > log.txt
+
+// whole house with lots of keyframes (no merging)
+--oni /home/peter/local/datasets/oni/peter-house-1.oni --output "whole-house" --frame_increment 3 --max 3  --f --mt grid --v --set_color_weights  --max_mb_gpu 500  --keyframes_only --circle_mask_pixel_radius 320 --min_fraction 0.2 --save_mesh_every_n 200  --loop_closure --min_age 1 --keyframe_distance_create 0.01 > log-whole-house.txt
+
+
+// try to figure out what went wrong with bond and lots of keyframes
+--oni /home/peter/local/datasets/oni/peter-house-1.oni --output "bond-min-age-loop-many-key" --frame_increment 3 --max 3  --f --mt grid --v --max_mb_gpu 3000  --keyframes_only --circle_mask_pixel_radius 320 --frame_start 3000 --frame_end 3500 --min_fraction 0.2 --save_mesh_every_n 50  --loop_closure --min_age 1 --keyframe_distance_create 0.01 --glfw_join --glfw_mesh_every_frame > log.txt
+
+--debug_grid_motion 
+
+// I surrender for now...time to try a different wall
+// THIS FAILS COMPLETELY with --min_fraction 0.2:
+// It still fails later on the floor...worth a look!!!!!!!!!!!!!!!!!!
+--oni /home/peter/local/datasets/oni/bond-wall-1.oni --output "bond-wall-1-sparse" --frame_increment 3 --max 3  --f --mt grid --v --max_mb_gpu 3000  --keyframes_only --circle_mask_pixel_radius 320  --save_mesh_every_n 50  --loop_closure --min_age 1 --glfw_join  > log-bond-wall-1-sparse.txt
+
+--glfw_mesh_every_frame
+--glfw_mesh_every_keyframe
+--keyframe_distance_create 0.01
+--min_fraction 0.2
+
+// try it without loop, just for fun...DELETE THIS FROM RUNS
+--oni /home/peter/local/datasets/oni/bond-wall-1.oni --output "bond-wall-1-sparse" --frame_increment 3 --max 3  --f --mt grid --v --max_mb_gpu 3000  --keyframes_only --circle_mask_pixel_radius 320  --glfw_join 
+
+
+/// back home...new computer
+ --output D:\devrun\merge_test --oni C:\devdata\oni\bond-wall-2.oni --frame_increment 3 --max 3  --f --mt grid --v --max_mb_gpu 2000  --keyframes_only --circle_mask_pixel_radius 320 --loop_closure --min_age 1 --optimize_iterations 10 --save_mesh_every_n 100 --merge_after_closure --glfw_join --glfw_mesh_every_keyframe --suppress_debug_images --activate_graph_depth 1 > D:\devrun\log.txt
+ 
+ // school...pics for poster
+ --oni C:\devdata\oni\espresso-easy.oni --frame_increment 3 --max 3  --f --mt grid --v --max_mb_gpu 500  --keyframes_only --circle_mask_pixel_radius 320 --loop_closure --min_age 50 --optimize_iterations 10  --merge_after_closure --glfw_join --suppress_debug_images --glfw_background_intensity 1.0
+ 
+ 
+ // boy I haven't run this in too long
+  --oni C:\devdata\oni\espresso-easy.oni --frame_increment 3 --max 3  --f --mt grid --v --max_mb_gpu 500  --keyframes_only --circle_mask_pixel_radius 320 --loop_closure --min_age 50 --optimize_iterations 10  --merge_after_closure --glfw_join
+  
+ 
+ // mask object
+ --pcd C:\devdata\truck --v --do_mask_object --do_mask_hand --histogram_hand_file D:\devdata\truck\hand.yml --histogram_object_file D:\devdata\truck\object.yml --vs 0.0025  --max 2 --cam_fx 540 --cam_fy 540
+ 
+ --glfw_join
+ 
+ 
+// debugging evan's mesh issue
+--png c:\devdata\evan\mesh_debug --v --expect_evan_poses --save_mesh_every_n 1 --frame_end 5 --pause_every_frame
+--mt grid --test_static_mesh_at_end
+
+--glfw_join
+--debug_show_nonzero_voxels
+--align_debug_images 
+
+
+// patch volumes (!!)
+--oni C:\devdata\oni\espresso-easy.oni --frame_increment 3 --max 3 --f --mt patch --pause_every_frame
+
+// try patch on truck
+  --png C:\devdata\truck_png --v --do_mask_object --do_mask_hand --histogram_hand_file D:\devdata\truck\hand.yml --histogram_object_file D:\devdata\truck\object.yml --vs 0.0025  --max 2 --cam_fx 540 --cam_fy 540 --mt patch --pause_every_frame --patch_border_create 0.02 --patch_segments_create_of_all_sizes 
+ 
+ --debug_patch_creation
+  --debug_render
+ --patch_segments_min_size 100
+ --test_static_mesh_at_end
+ 
+ 
+/////////////
+// video
+  --oni C:\devdata\oni\espresso-easy.oni --frame_increment 3 --max 3  --f --mt grid --v  --max_mb_gpu 2000  --loop_closure  --keyframes_only --min_age 50  --optimize_iterations 10  --output D:\devresults\grid-movie-no-merge-camera-view  --save_images "images"  --read_glfw_buffer    --disable_glfw_pose_graph    --update_interface_view_pose 
+  
+  --glfw_width 1200 --glfw_height 900
+  --fixed_top_down_view
+  
+// video for patch volumes
+  --oni C:\devdata\oni\espresso-easy.oni --frame_increment 3 --max 3  --f --mt patch --v  --max_mb_gpu 2000  --loop_closure  --keyframes_only --min_age 50  --optimize_iterations 10  --output D:\devresults\patch-movie-more  --save_images "images"  --read_glfw_buffer    --disable_glfw_pose_graph     
+  
+  	1)
+   --update_interface_view_pose 
+  2)
+  --glfw_width 1200 --glfw_height 900  --fixed_top_down_view
+
+   
+   
+  --circle_mask_pixel_radius 320 
+  --merge_after_closure 
+  --glfw_join
+  
+  
+////////////////
+//// evan debug
+--png D:\devdata\evan\irosA1n2_take3  --v --expect_evan_camera_list  --output D:\devresults\evan --cam_min_depth 0.01 --save_images "save_images" --save_mesh_every_n 100
+
+
+  
+  
+////////////
+// try some new hand data (including introducing learning code again)
+--oni C:\devdata\oni\hand-xtion-box-1.oni  --v --mask_object --mask_hand     --vs 0.0025  --max 2 --cam_fx 540 --cam_fy 540  --histogram_object_file C:\devdata\oni\hand-xtion-box-1-object.yml   --histogram_hand_file C:\devdata\oni\hand-xtion-box-1-hand.yml    --output d:\devresults\hand --save_images "mask_hand_debug"  
+
+--mask_hand_dilate_iterations 4  
+
+// this works now
+--use_most_recent_color
+--save_images "original_broken"
+--max_weight_color 0.001
+--align_weight_color 0
+
+--align_debug_images 
+--load D:\devresults\hand\save_state_00165  --skip_frames_based_on_camera_list
+--save_images "images"
+
+--load D:\devresults\hand\save_state_00165 --skip_frames_based_on_camera_list
+
+# neither disable huber or regularize worked
+--disable_huber --regularize_lambda 100000
+--histogram_object_file C:\devdata\oni\hand-xtion-box-1-object.yml   --histogram_hand_file C:\devdata\oni\hand-xtion-box-1-hand.yml
+--learn_histogram_hand --histogram_hand_file C:\devdata\oni\hand-xtion-box-1-hand.yml
+--learn_histogram_object --histogram_object_file C:\devdata\oni\hand-xtion-box-1-object.yml
+
+
+/// testing of volume merging for patch reorientation
+  --oni C:\devdata\oni\espresso-easy.oni --frame_increment 3 --max 3  --f --v  --max_mb_gpu 2000        --mt patch       --loop_closure  --keyframes_only   --optimize_iterations 10  --min_age 10  --read_glfw_buffer   --disable_glfw_pose_graph --output D:\devresults\patch_reorientation_always_never   --glfw_width 1200 --glfw_height 900  --fixed_top_down_view  --save_images "images"  
+  
+--test_patch_reorientation 
+  
+  --debug_show_nonzero_voxels
+  --test_patch_reorientation_glfw
+  --debug_show_nonzero_voxels
+  --debug_render
+  
+  --test_nvidia_gpu_memory --cli
+
+  
+  
+--debug_merging 
+--debug_add_volume
+--pause_every_frame
+  
+// add these for loop  
+  --loop_closure  --keyframes_only   --optimize_iterations 10  --min_age 10
+  
+  
+// check these args before:
+// make movie of looping to show new features  
+ --oni C:\devdata\oni\peter-house-1.oni --frame_increment 3 --max 3  --f --mt grid --v  --max_mb_gpu 2000  --loop_closure  --keyframes_only --min_age 50  --optimize_iterations 10  --output D:\devresults\peter-house-1-new-keyframes --save_images "images" --read_glfw_buffer     --skip_frames_based_on_camera_list  --activate_graph_depth 3     --glfw_width 1200 --glfw_height 900 --fixed_top_down_view   
+  
+  
+// current
+ --oni C:\devdata\oni\espresso-easy.oni --max 3  --mt grid --v  --max_mb_gpu 2000  --loop_closure  --keyframes_only --min_age 50  --optimize_iterations 10  --output D:\devresults\current    --skip_frames_based_on_camera_list  --activate_graph_depth 3   --use_multiscale --gn_max_iterations 10  > D:\devresults\run.txt 
+ 
+ // multiscale
+  --oni C:\devdata\oni\espresso-easy.oni --max 3  --mt grid --v  --max_mb_gpu 2000  --loop_closure  --keyframes_only --min_age 50  --optimize_iterations 10  --output D:\devresults\current    --skip_frames_based_on_camera_list  --activate_graph_depth 3   --use_multiscale --gn_max_iterations 10  > D:\devresults\run_multiscale.txt
+  
+  // single scale 10
+    --oni C:\devdata\oni\espresso-easy.oni --max 3  --mt grid --v  --max_mb_gpu 2000  --loop_closure  --keyframes_only --min_age 50  --optimize_iterations 10  --output D:\devresults\current    --skip_frames_based_on_camera_list  --activate_graph_depth 3  --gn_max_iterations 10  > D:\devresults\run_singlescale.txt
+	
+	 // multiscale fs 3
+  --oni C:\devdata\oni\espresso-easy.oni --max 3 --frame_increment 3 --mt grid --v  --max_mb_gpu 2000  --loop_closure  --keyframes_only --min_age 50  --optimize_iterations 10      --skip_frames_based_on_camera_list  --activate_graph_depth 3   --use_multiscale --gn_max_iterations 10  --output D:\devresults\multi_fs3 --frame_end 200 > D:\devresults\run_multi_fs3.txt 
+  
+  // single fs 3 (gn 10)
+  --oni C:\devdata\oni\espresso-easy.oni --max 3 --frame_increment 3 --mt grid --v  --max_mb_gpu 2000  --loop_closure  --keyframes_only --min_age 50  --optimize_iterations 10      --skip_frames_based_on_camera_list  --activate_graph_depth 3  --gn_max_iterations 10  --output D:\devresults\single_fs3_gn10 --frame_end 200 > D:\devresults\run_single_fs3_gn10.txt 
+  
+  // single fs3 (gn 40)
+    --oni C:\devdata\oni\espresso-easy.oni --max 3 --frame_increment 3 --mt grid --v  --max_mb_gpu 2000  --loop_closure  --keyframes_only --min_age 50  --optimize_iterations 10      --skip_frames_based_on_camera_list  --activate_graph_depth 3  --gn_max_iterations 40  --output D:\devresults\single_fs3_gn40 --frame_end 200 > D:\devresults\run_single_fs3_gn40.txt 
+  
+   --use_multiscale 
+   
+// multiscale fs 3 (movie)
+  --oni C:\devdata\oni\espresso-easy.oni --max 3 --frame_increment 3 --mt grid --v  --max_mb_gpu 2000  --loop_closure  --keyframes_only --min_age 50  --optimize_iterations 10      --skip_frames_based_on_camera_list  --activate_graph_depth 3   --use_multiscale --gn_max_iterations 10  --output D:\devresults\multi_fs3_images --frame_end 200 --save_images images > D:\devresults\run_multi_fs3_images.txt 
+  
+  // single fs 3 gn 10 (movie)
+  --oni C:\devdata\oni\espresso-easy.oni --max 3 --frame_increment 3 --mt grid --v  --max_mb_gpu 2000  --loop_closure  --keyframes_only --min_age 50  --optimize_iterations 10      --skip_frames_based_on_camera_list  --activate_graph_depth 3  --gn_max_iterations 10  --output D:\devresults\single_fs3_gn10_images --frame_end 200 --save_images images > D:\devresults\run_single_fs3_gn10_images.txt 
+  
+// single fs 3 gn 40 (movie)
+     --oni C:\devdata\oni\espresso-easy.oni --max 3 --frame_increment 3 --mt grid --v  --max_mb_gpu 2000  --loop_closure  --keyframes_only --min_age 50  --optimize_iterations 10      --skip_frames_based_on_camera_list  --activate_graph_depth 3  --gn_max_iterations 40  --output D:\devresults\single_fs3_gn40_images --frame_end 200 --save_images images > D:\devresults\run_single_fs3_gn40_images.txt 
+
+// one volume
+     --oni C:\devdata\oni\espresso-easy.oni --max 3 --frame_increment 3 --v  --max_mb_gpu 2000    --use_multiscale --gn_max_iterations 10  --output D:\devresults\one_volume_multiscale --frame_end 200  > D:\devresults\one_volume_multiscale.txt 
+
+
+ 
+ /////////////////////////// 
+// yuyin test
+--yuyin "D:\devdata\yuyin\processed\quaker\quaker_big_chewy_chocolate_chip" --yuyin_prefix "NP3_"   --cam_fx 1077.9650140750714 --cam_fy 1077.9660455155206 --cam_sx 1280 --cam_sy 1024 --cam_cx 625.779506547822 --cam_cy 517.1211438345424 --max 3   --v  --max_mb_gpu 2000  --use_multiscale --gn_max_iterations 10 --vs 0.0025   --output D:\devresults\run  > D:\devresults\run.txt 
+
+--glfw_mesh_every_frame    --glfw_width 1200 --glfw_height 900  --fixed_top_down_view --fixed_top_down_view_height 2 --read_glfw_buffer --save_images images
+--pause_every_frame
+
+1077.9650140750714	0.0	625.779506547822
+0.0	1077.9660455155206	517.1211438345424
+0.0	0.0	1.0
+	 
+// some options to consider:
+--loop_input
+--align_debug_images 
+--frame_increment 3
+--f
+--grid_free
+  
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+ 
+ // LINUX
+--oni /home/peter/local/datasets/oni/espresso-easy.oni
+--output /home/peter/local/results/current  > /home/peter/local/results/current.txt
+--load /home/peter/local/results/temp_debug/save_state_00150
+
+// WINDOWS
+--oni C:\devdata\oni\espresso-easy.oni
+--output D:\devresults\run   > D:\devresults\run.txt 
+--load "D:\devresults\save_state_00172"
+
+ // CURRENT (mt moving)
+--oni /home/peter/local/datasets/oni/espresso-easy.oni --max 3 --frame_increment 3 --f --mt moving --v  --max_mb_gpu 200  --loop_closure   --activation_mode keyframe_graph --debug_fix_g2o_vertices_for_keyframes --optimize_iterations 20  --debug_delete_edges_for_merged_volumes --loop_input --output /home/peter/local/results/current  > /home/peter/local/results/current.txt
+
+
+--load D:\devresults\run_house_1_partials_use_this\save_state_01400
+--save_state_every_n 100 --save_mesh_every_n 100
+--debug_clipping 
+--debug_fix_g2o_vertices_for_keyframes
+--activation_mode full_graph
+--activation_mode keyframe_graph /// causes problems for grid now?? 
+--loop_input
+--load "D:\devresults\save_state_00179_running_merge"
+--debug_no_moving_mesh 
+--debug_merge_show_points
+ --debug_optimize 
+--debug_merge_show_points
+
+// good moving state
+--load D:\devresults\run\saved_state_00174  
+
+// live:
+--low_resolution 
+// data:
+--oni C:\devdata\oni\espresso-easy.oni
+--grid_free  
+--debug_show_nonzero_voxels
+// need this to pick up on recorded scene
+
+///// movie:
+--glfw_mesh_every_frame    --glfw_width 1200 --glfw_height 900  --fixed_top_down_view --fixed_top_down_view_height 4 --read_glfw_buffer --save_images images
+
+
+
+
+/////////////////////
+//// wetlab
+
+// WINDOWS
+--oni C:\devdata\oni\espresso-easy.oni
+--output D:\devresults\run   > D:\devresults\run.txt 
+
+// linux
+--oni /home/peter/local/datasets/oni/wetlab/wetlab-3.oni  
+--output /home/peter/local/results/current  > /home/peter/local/results/current.txt
+ 
+--oni C:\devdata\oni\wetlab-3.oni  --vs 0.005 --grid_size 64 --max 2.5 --frame_increment 3 --f --mt grid --v  --max_mb_gpu 2000   --activation_mode keyframe_graph  --debug_optimize --debug_fix_g2o_vertices_for_keyframes --optimize_iterations 20 --save_images images --read_glfw_buffer  --glfw_width 1200 --glfw_height 900 --fixed_view_pos_at_up -2 -1.5 0 0 0 0 0 -1 -.25  --glfw_mesh_every_n 10   --output D:\devresults\run   > D:\devresults\run.txt 
+
+--read_glfw_buffer  --glfw_width 1200 --glfw_height 900 --fixed_top_down_view --fixed_top_down_view_height 4
+
+--loop_closure 
+
+
+
+
+/////////////////
+// freiburg
+Windows:
+--freiburg D:\devdata\rgbd_dataset_freiburg\rgbd_dataset_freiburg1_desk\associate.default.txt
+--output D:\devresults\freiburg  > D:\devresults\freiburg.txt 
+
+Linux:
+--freiburg /home/peter/datasets/rgbd_dataset_freiburg/rgbd_dataset_freiburg1_room/associate.default.txt
+--output /home/peter/results/freiburg > /home/peter/results/freiburg.txt
+
+--freiburg /home/peter/datasets/rgbd_dataset_freiburg/rgbd_dataset_freiburg2_desk/associate.default.txt --max 5 --f --frame_increment 3 --mt grid --v  --max_mb_gpu 2000 --align_weight_color 0 --output /home/peter/results/freiburg 
+
+
+> /home/peter/results/freiburg.txt
+(is it color making 1_room fail?) (Nope)
+(is it features?  probably not) (Nope)
+
+(was max 3 for first set of runs)
+--frame_increment 3
+--loop_closure
+--optimize_iterations 20
+--activation_mode keyframe_graph 
+
+
+///////
+// try to figure out stupid edge issue
+ // LINUX
+--oni /home/peter/local/datasets/oni/espresso-easy.oni
+--output /home/peter/local/results/current  > /home/peter/local/results/current.txt
+--load /home/peter/local/results/temp_debug/save_state_00150
+
+// WINDOWS
+--oni C:\devdata\oni\espresso-easy.oni
+--output D:\devresults\run   > D:\devresults\run.txt 
+--load "D:\devresults\save_state_00172"
+
+--oni C:\devdata\oni\espresso-easy.oni --max 3 --frame_increment 3 --f --mt moving --v  --max_mb_gpu 1000  --loop_closure   --activation_mode keyframe_graph --debug_fix_g2o_vertices_for_keyframes --optimize_iterations 20  --debug_delete_edges_for_merged_volumes  --output D:\devresults\run   > D:\devresults\run.txt
+
+--loop_input  --save_mesh_every_n 100 --save_state_every_n 100
+
+
+
+
+////////////////////////
+// more wetlab (thesis!)
+
+// windows
+--oni D:\devdata\oni\wetlab_2\wetlab_area_5_empty_2.oni
+--output D:\devresults\wetlab_area_5_empty_2   > D:\devresults\run.txt 
+
+// linux
+--oni /home/peter/datasets/oni/wetlab_2/wetlab_area_5_empty_2.oni
+--output /home/peter/results/current > /home/peter/results/current.txt
+
+//// first 0.5cm windows runs
+--oni D:\devdata\oni\wetlab_2\wetlab_area_5_empty_2.oni --vs 0.005 --grid_size 64 --max 2.5 --frame_increment 3 --f --mt grid --v  --max_mb_gpu 2000   --activation_mode keyframe_graph  --debug_optimize --debug_fix_g2o_vertices_for_keyframes --optimize_iterations 20 --output D:\devresults\wetlab_area_5_empty_2   > D:\devresults\run.txt 
+
+// higher resolution on linux
+--oni /home/peter/datasets/oni/wetlab_2/wetlab_area_5_full_1.oni --vs 0.002 --grid_size 64 --max 2 --frame_increment 3 --f --mt grid --v  --max_mb_gpu 2000   --activation_mode keyframe_graph  --debug_optimize --debug_fix_g2o_vertices_for_keyframes --optimize_iterations 20 --output /home/peter/results/current > /home/peter/results/current.txt 
+
+// qt on linux
+--oni /home/peter/datasets/oni/wetlab_2/wetlab_area_5_full_1.oni --vs 0.005 --max 2.0 --frame_increment 3 --f --mt grid --v  --max_mb_gpu 2000 --output /home/peter/results/current >  /home/peter/results/current.txt 
+
+// debug new marching cubes
+// windows:
+--oni D:\devdata\oni\wetlab_2\wetlab_area_5_empty_2.oni --frame_end 15 --vs 0.005 --grid_size 64 --max 2.5 --frame_increment 3 --f --mt grid --v  --max_mb_gpu 2000  --save_mesh_every_n 1 --output D:\devresults\run   > D:\devresults\run.txt 
+
+// linux:
+--oni /home/peter/datasets/oni/wetlab_2/wetlab_area_5_empty_2.oni --frame_end 15 --vs 0.005 --grid_size 64 --max 2.5 --frame_increment 3 --f --mt grid --v  --max_mb_gpu 2000  --save_mesh_every_n 1 --output /home/peter/results/current > /home/peter/results/current.txt
+
+
+////////// BAXTER
+--oni /home/peter/datasets/oni/baxter_objects/red_thick_cup_1.oni --vs 0.005 --grid_size 64 --max 1.5 --frame_increment 3 --f --mt grid --v  --max_mb_gpu 2000 --update_interface_view_pose  --output /home/peter/results/current > /home/peter/results/current.txt
+
+// load poses?
+--oni /home/peter/datasets/oni/baxter_objects/blue_bowl_1.oni --load_camera_poses /home/peter/results/baxter_single_mesh/blue_bowl_1.oni/mesh_final/camera_poses.txt --vs 0.005 --grid_size 64 --max 1.5 --frame_increment 3 --f --mt grid --v  --max_mb_gpu 2000 --output /home/peter/results/current > /home/peter/results/current.txt
+
+
+///////// LUIS
+// windows (ood)
+--luis D:\devdata\luis\luis_1\box 
+--luis  D:\devdata\luis\luis_1\pipette --luis_limit_360 --vs 0.0025 --grid_size 64 --max 1.5 --frame_increment 1  --mt grid --v  --f --max_mb_gpu 2000 --circle_mask_pixel_radius 200 --circle_mask_x 185 --circle_mask_y 375   --output D:\devresults\run   > D:\devresults\run.txt 
+
+--pause_every_frame
+--min_truncation_distance 0.02
+--frame_start 20
+--expect_luis_camera_list
+
+
+// linux 
+--luis /home/peter/datasets/luis/luis_1/pipette --luis_limit_360 --vs 0.0025 --grid_size 64 --max 1.5 --frame_increment 1  --mt grid --v  --f --max_mb_gpu 2000 --circle_mask_pixel_radius 175 --circle_mask_x 185 --circle_mask_y 375  --output /home/peter/results/current > /home/peter/results/current.txt 
+
+
+
+
+////////////////
+// connor arm
+--oni /home/peter/datasets/oni/connor_arm/connor_arm_2.oni --vs 0.0025 --grid_size 64 --max 1.5 --frame_increment 3 --f --mt grid --v --max_mb_gpu 2000 --output /home/peter/results/current > /home/peter/results/current.txt
+
+
+
+
+////////////////////////////////////////////////
+//////////// HISTOGRAM & KMEANS
+// linux   (OOD)
+--oni /home/peter/datasets/oni/baxter_objects/blue_bowl_1.oni --load_camera_poses /home/peter/results/baxter_single_mesh/blue_bowl_1.oni/mesh_final/camera_poses.txt --vs 0.0025 --vxyz 256 --grid_size 64 --max 1.5 --frame_increment 3 --f --mt single --mt1 kmeans    --v  --max_mb_gpu 2000 --model_histogram_abs 0.02 --model_histogram_bin_count 20 --pick_pixel --debug_points_along_ray 9 --extra_skip_hack 0 --max_weight_icp 10000 --normals_smooth_iterations 10 --use_six_volumes --compatibility_add_max_angle_degrees 45 --compatibility_render_max_angle_degrees 90 --minimum_relative_count 0.5  --debug_rendering   --debug_slices --slice_images_scale 1  --render_all_6 --render_all_6_from_canonical --render_all_6_from_canonical_distance 1.0 --cos_weight --output /home/peter/results/current > /home/peter/results/current.txt
+
+
+
+
+///////////////
+// generate data
+
+--output_folder D:\Dropbox\work\generated\box_01_1_30_noise_001 --box_thickness 0.01 --raytrace_instead --box_count 1 --shape_rotation 30 --noise_sigma 0.001
+--output_folder D:\Dropbox\work\generated\box_005_1_30_noise_001 --box_thickness 0.005 --raytrace_instead --box_count 1 --shape_rotation 30 --noise_sigma 0.001
+--output_folder D:\Dropbox\work\generated\box_001_1_30_noise_001 --box_thickness 0.001 --raytrace_instead --box_count 1 --shape_rotation 30 --noise_sigma 0.001
+
+/// more generation...todo:
+--output_folder D:\Dropbox\work\generated\special_test --special --raytrace_instead --pause
+--output_folder /home/peter/Dropbox/work/generated/special_test --special --raytrace_instead --pause
+
+
+
+// windows   (OOD)  
+ --png_depth D:\Dropbox\work\generated\box_001_1_30_noise_001 --first_frame_origin --vs 0.0025 --vxyz 256 --grid_size 64 --max 1.5  --f --mt single --mt1 kmeans    --v  --max_mb_gpu 2000 --model_histogram_abs 0.02 --model_histogram_bin_count 20 --pick_pixel --debug_points_along_ray 9 --extra_skip_hack 0 --max_weight_icp 10000 --normals_smooth_iterations 10 --use_six_volumes --compatibility_add_max_angle_degrees 45 --compatibility_render_max_angle_degrees 90 --minimum_relative_count 0.5      --slice_images_scale 1  --render_all_6 --render_all_6_from_canonical --render_all_6_from_canonical_distance 1.0 --cos_weight --min_truncation_distance 0.02  --output D:\devresults\run > D:\devresults\run.txt
+
+// linux  
+--png_depth /home/peter/Dropbox/work/generated/box_001_1_30 --first_frame_origin --vs 0.0025 --vxyz 256 --grid_size 64 --max 1.5  --f --mt single --mt1 kmeans    --v  --max_mb_gpu 2000 --model_histogram_abs 0.02 --model_histogram_bin_count 20 --pick_pixel --debug_points_along_ray 9 --extra_skip_hack 0 --max_weight_icp 10000 --normals_smooth_iterations 10 --use_six_volumes --compatibility_add_max_angle_degrees 45 --compatibility_render_max_angle_degrees 90 --minimum_relative_count 0.5      --slice_images_scale 1  --render_all_6 --render_all_6_from_canonical --render_all_6_from_canonical_distance 1.0 --cos_weight --min_truncation_distance 0.02 --debug_rendering --debug_meshes --pause_every_frame   --output /home/peter/results/current > /home/peter/results/current.txt
+
+
+--debug_rendering --debug_slices --debug_meshes --pause_every_frame
+ 
+ --oni D:\devdata\oni\baxter_objects\blue_bowl_1.oni --load_camera_poses D:\devresults\baxter_single_mesh\blue_bowl_1.oni\mesh_final\camera_poses.txt --frame_increment 3
+
+ --pause_every_frame
+
+--empty_always_included
+--mt2 histogram
+
+
+
+
+///////////////////////////
+// TODO: THIS RIGHT NOW
+// hallway
+/home/peter/Dropbox/work/datasets/hallway/hallway_center_1.oni
+/home/peter/Dropbox/work/datasets/hallway/hallway_center_2.oni
+/home/peter/Dropbox/work/datasets/hallway/hallway_side_1.oni
+
+--use_most_recent_color 
+(THIS STILL SLIPS EVEN WITH VIGNETTE)
+
+// linux    (ood) 
+--oni /home/peter/Dropbox/work/datasets/hallway/hallway_center_1.oni --load_camera_poses /home/peter/Dropbox/work/results/hallway/hallway_1_last_color/mesh_final/camera_poses.txt --vs 0.01 --grid_size 64 --max 8 --frame_increment 1  --mt grid --v  --max_mb_gpu 1500 --max_mb_system 4000 --min_truncation_distance 0.1 --icp_max_distance 1.0 --huber_icp 0.05 --icp_max_normal 45 --gn_max_iterations 30 --new_render --use_new_alignment --align_debug_images_scale 0.5 --apply_vignette_model --skip_single_mesh   --output /home/peter/results/run  > /home/peter/results/run.txt 
+
+// windows 
+--oni D:\Dropbox\work\datasets\hallway\hallway_center_1.oni --load_camera_poses D:\Dropbox\work\results\hallway\hallway_1_last_color\mesh_final\camera_poses.txt --vs 0.01 --grid_size 64 --max 8 --frame_increment 1  --mt grid --v  --max_mb_gpu 1500 --max_mb_system 4000 --min_truncation_distance 0.1 --icp_max_distance 1.0 --huber_icp 0.05 --icp_max_normal 45 --gn_max_iterations 30 --new_render --use_new_alignment --align_debug_images_scale 0.5 --apply_vignette_model --skip_single_mesh  --output D:\devresults\run   > D:\devresults\run.txt 
+
+// todo: set this better:
+--temp_folder
+
+// vignette calibration (windows)
+--oni D:\Dropbox\work\datasets\hallway\hallway_center_1.oni --cameras D:\Dropbox\work\results\hallway\hallway_1_1cm\mesh_final\camera_poses.txt --max_abs_error 0.1 --max_depth_difference 0.1 --frame_increment 5 --pause > D:\devresults\vignette.txt
+
+// vignette calibration (linux)
+--oni /home/peter/Dropbox/work/datasets/hallway/hallway_center_1.oni --cameras /home/peter/Dropbox/work/results/hallway/hallway_1_1cm/mesh_final/camera_poses.txt --max_abs_error 0.1 --max_depth_difference 0.1 --frame_increment 5 > /home/peter/results/vignette.txt 
+
+--max_abs_error 0.2 
+ --pause
+
+--align_debug_images
+I think i'ts vignetting
+--align_weight_color 0
+
+ALL ABOUT THE OUTLIERS, DUDE
+indeed...huber saves the day...
+--icp_max_distance 1.0 --huber_icp 0.05
+
+--max 2
+--frame_increment 3
+--f
+
+--activation_mode keyframe_graph  --debug_optimize --debug_fix_g2o_vertices_for_keyframes --optimize_iterations 20
+
+
+//////////////////
+// hallway with loops
+--oni /home/peter/Dropbox/work/datasets/hallway/hallway_loop_1.oni 
+--oni /home/peter/Dropbox/work/datasets/hallway/hallway_loop_2.oni
+
+--cli
+// linux    (ood?)
+--oni /home/peter/Dropbox/work/datasets/hallway/hallway_loop_1.oni --pause_every_frame --glfw_join --vs 0.02 --grid_size 64 --max 8 --frame_increment 3 --f  --mt grid --v  --max_mb_gpu 800 --max_mb_system 4000 --min_truncation_distance 0.1 --icp_max_distance 1.0 --huber_icp 0.05 --icp_max_normal 45 --gn_max_iterations 30 --new_render --use_new_alignment --align_debug_images_scale 0.5  --skip_single_mesh --use_most_recent_color --apply_vignette_model --loop_closure  --dbow_debug_images_save --dbow_resources_folder /home/peter/checkout/dbow_place_recognition/DLoopDetector/build/resources/ --output /home/peter/results/run  > /home/peter/results/run.txt 
+
+--use_dbow_place_recognition
+--load_state /home/peter/results/saved_states_hallway_loop_1/save_state_00800
+
+// windows   
+--oni D:\Dropbox\work\datasets\hallway\hallway_loop_2.oni
+--oni D:\Dropbox\work\datasets\hallway\hallway_loop_1.oni --load_state  D:\devresults\every_200_states\save_state_00400 --glfw_join --vs 0.02 --grid_size 64 --max 8 --frame_increment 3 --f  --mt grid --v  --max_mb_gpu 800 --max_mb_system 4000 --min_truncation_distance 0.1 --icp_max_distance 1.0 --huber_icp 0.05 --icp_max_normal 45 --gn_max_iterations 30 --new_render --use_new_alignment --align_debug_images_scale 0.5  --skip_single_mesh --use_most_recent_color --apply_vignette_model --loop_closure --use_dbow_place_recognition --dbow_debug_images_save --dbow_resources_folder C:\devlibs\github\DLoopDetector\build\resources\  --output D:\devresults\run   > D:\devresults\run.txt 
+
+--save_state_every_n 200
+// this didn't help:
+--circle_mask_pixel_radius 300
+
+--load_state D:\Dropbox\work\datasets\hallway\save_state_00800 --debug_max_total_loop_closures 1
+--load_state  D:\devresults\every_200_states\save_state_00200
+
+  --debug_allow_sequential_closures
+
+
+--use_most_recent_color
+vs
+--apply_vignette_model
+vs both
+
+
+/////////////
+// rerun wetlab stuff as some test at some point
+// windows 
+--oni D:\Dropbox\work\datasets\wetlab_2\wetlab_area_5_empty_2.oni --vs 0.005 --grid_size 64 --max 2.5 --frame_increment 3 --f --mt grid --v  --max_mb_gpu 2000   --activation_mode keyframe_graph --debug_optimize --debug_fix_g2o_vertices_for_keyframes --optimize_iterations 20    --output D:\devresults\run   > D:\devresults\run.txt 
+// linux (ood)
+--oni /home/peter/Dropbox/work/datasets/wetlab_2/wetlab_area_5_empty_2.oni --vs 0.005 --grid_size 64 --max 2.5 --frame_increment 3 --f --mt grid --v  --max_mb_gpu 2000   --activation_mode keyframe_graph  --debug_optimize --debug_fix_g2o_vertices_for_keyframes --optimize_iterations 20    --output /home/peter/results/run > /home/peter/results/run.txt 
+
+--pause_every_frame
+--align_weight_color 0
+
+
+///////////////////////
+// Arun
+
+/////////////// these are with first set of calib params
+// good:
+--arun  D:\Dropbox\work\datasets\arun\APCBagfiles_F200\data_recons_oreo --use_f200_camera --rect_mask_x 0 --rect_mask_y 0 --rect_mask_width 640 --rect_mask_height 400 --circle_mask_pixel_radius 240 --circle_mask_x 320 --circle_mask_y 240 --frame_increment 3 --f --vs 0.001
+// bad:
+--arun  D:\Dropbox\work\datasets\arun\APCBagfiles_F200\data_recons_oreo_vert --use_f200_camera --rect_mask_x 0 --rect_mask_y 0 --rect_mask_width 640 --rect_mask_height 400 --circle_mask_pixel_radius 240 --circle_mask_x 320 --circle_mask_y 240 --frame_increment 1 --f --vs 0.001
+// better:
+--arun  D:\Dropbox\work\datasets\arun\APCBagfiles_F200\data_recons_crayons_horz1 --use_f200_camera --turntable_rotation_limit 400 --rect_mask_x 0 --rect_mask_y 0 --rect_mask_width 640 --rect_mask_height 400 --circle_mask_pixel_radius 240 --circle_mask_x 320 --circle_mask_y 240 --frame_increment 1 --f --vs 0.001
+// ok I guess
+--arun D:\Dropbox\work\datasets\arun\APCBagfiles_F200\data_recons_crayons_horz2 --use_f200_camera --turntable_rotation_limit 400 --rect_mask_x 0 --rect_mask_y 0 --rect_mask_width 640 --rect_mask_height 400 --circle_mask_pixel_radius 240 --circle_mask_x 320 --circle_mask_y 240 --frame_increment 1 --f --vs 0.001 
+// ok 
+--arun D:\Dropbox\work\datasets\arun\APCBagfiles_F200\data_recons_crayons_vert1 --use_f200_camera --turntable_rotation_limit 400 --rect_mask_x 0 --rect_mask_y 0 --rect_mask_width 640 --rect_mask_height 400 --circle_mask_pixel_radius 240 --circle_mask_x 320 --circle_mask_y 240 --frame_increment 1 --f --vs 0.001
+// ok
+--arun D:\Dropbox\work\datasets\arun\APCBagfiles_F200\data_recons_crayons_vert2 --use_f200_camera --turntable_rotation_limit 400 --rect_mask_x 0 --rect_mask_y 0 --rect_mask_width 640 --rect_mask_height 400 --circle_mask_pixel_radius 240 --circle_mask_x 320 --circle_mask_y 240 --frame_increment 1 --f --vs 0.001
+
+////////////
+// luis pipette arun style
+--output D:\devresults\run   > D:\devresults\run.txt 
+--arun "D:\Dropbox\work\datasets\luis\current\pipette_closerange" 
+--arun "/home/peter/Dropbox/work/datasets/luis/current/pipette_closerange"  --align_weight_color 0   --use_f200_camera --save_masked_input --rect_mask_x 180 --rect_mask_y 0 --rect_mask_width 280 --rect_mask_height 420     --turntable_rotation_limit 400    --frame_increment 1 --f --vs 0.001    --grid_size 64 --max 0.6  --mt grid --v  --max_mb_gpu 2000 --huber_icp 0.05 --icp_max_normal 45 --gn_max_iterations 30 --new_render --use_new_alignment --align_debug_images_scale 0.5 --output /home/peter/results/run > /home/peter/results/run.txt 
+
+--use_most_recent_color
+--circle_mask_pixel_radius 300
+
+
+/////////////////////////////////////
+// OLD ARUN STUFF I DON'T KNOW WHY YOU KEEP THIS
+// windows 
+--arun D:\Dropbox\work\datasets\arun\TurntableData_full\champion_copper_plus_spark_plug\side1 --use_f200_camera --turntable_rotation_limit 400  --circle_mask_pixel_radius 300  --frame_increment 1 --f --vs 0.001    --grid_size 64 --max 0.6  --mt grid --v  --max_mb_gpu 2000 --huber_icp 0.05 --icp_max_normal 45 --gn_max_iterations 30 --new_render --use_new_alignment --align_debug_images_scale 0.5 --output D:\devresults\run   > D:\devresults\run.txt 
+
+--rect_mask_x 0 --rect_mask_y 0 --rect_mask_width 640 --rect_mask_height 400
+--circle_mask_x 320 --circle_mask_y 240
+
+// linux (ood)
+--arun /home/peter/Dropbox/work/datasets/arun/APCBagfiles_F200_2/oreo_mega_stuf/vert1 --use_f200_camera --turntable_rotation_limit 400 --rect_mask_x 0 --rect_mask_y 0 --rect_mask_width 640 --rect_mask_height 400 --circle_mask_pixel_radius 240 --circle_mask_x 320 --circle_mask_y 240 --frame_increment 1 --f --vs 0.001    --grid_size 64 --max 1.5  --mt grid --v  --max_mb_gpu 2000 --huber_icp 0.05 --icp_max_normal 45 --gn_max_iterations 30 --new_render --use_new_alignment --align_debug_images_scale 0.5 --output /home/peter/results/run > /home/peter/results/run.txt 
+
+ --align_weight_color 0 
+--pause_every_frame
+--align_debug_images
+--f 
+
+
+
+//////////////////////////////
+//////////////////////////////
+//  demo
+--new_render --use_new_alignment --skip_single_mesh --low_res --max 2.5 --vs 0.005 --mt grid --v --grid_size 64  --max_mb_gpu 2500 --scale_images 2 --output /home/peter/results/demo  > /home/peter/results/demo.txt
+
+--new_render --use_new_alignment --skip_single_mesh --low_res --f --max 2.5 --vs 0.005 --mt grid --v --grid_size 64  --max_mb_gpu 2500 --scale_images 2 --output /home/peter/results/demo  > /home/peter/results/demo.txt
+
+
+// --min_truncation_distance 0.1 --icp_max_distance 1.0 --huber_icp 0.05 --icp_max_normal 45
+
+--max_weight_icp 2
+
+// demo loop closure?
+--low_res --max 5 --f --mt grid --v --grid_size 64 --max_mb_gpu 2000 --scale_images 3 --loop_closure --use_most_recent_color --output /home/peter/results/current > /home/peter/results/current.txt
+
+// demo object?
+--luis /home/peter/datasets/luis/old/scale --luis_limit_360 --vs 0.0025 --grid_size 64 --max 1.5 --frame_increment 1 --f --mt grid --v  --max_mb_gpu 2000 --circle_mask_pixel_radius 175 --output /home/peter/results/luis > /home/peter/results/luis.txt 
+
+

@@ -1,0 +1,295 @@
+cmake_minimum_required (VERSION 2.6)
+project(OBJECT_MODELING)
+
+# look here for cmake modules as well
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake_modules)
+
+# will this work on windows?
+set(BUILD_SHARED_ALSO false)
+
+# move these later to avoid recompiles of everything?
+# both false for intel build
+IF (FRAME_PROVIDER_OPENNI2)
+add_definitions(-DFRAME_PROVIDER_OPENNI2)
+ENDIF()
+IF (FRAME_PROVIDER_PCL)
+add_definitions(-DFRAME_PROVIDER_PCL)
+ENDIF()
+
+# eigen (alone!)
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
+
+# opencv
+find_package( OpenCV REQUIRED )
+
+# opencl
+find_package( OpenCL REQUIRED )
+include_directories(${OPENCL_INCLUDE_DIR})
+# link_directories?
+# add_definitions?
+
+# openmp
+find_package( OpenMP )
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+	add_definitions(-DHAS_OPENMP)
+endif()
+
+# boost
+# static?
+set(Boost_USE_STATIC_LIBS   ON)
+find_package (Boost COMPONENTS system filesystem program_options serialization REQUIRED)
+IF (Boost_FOUND)
+	include_directories(${Boost_INCLUDE_DIR})
+	link_directories(${Boost_LIBRARY_DIRS})
+	add_definitions( "-DHAS_BOOST" ) # sure...
+ENDIF()
+
+
+# ME:
+
+############################################################################
+# LIBRARIES
+
+############
+# a ply library not in PCL (!!)
+add_library( ply_lib STATIC
+ply_lib/rply.h
+ply_lib/rply.c
+)
+IF(BUILD_SHARED_ALSO)
+add_library( ply_lib_shared SHARED
+ply_lib/rply.h
+ply_lib/rply.c
+)
+ENDIF()
+include_directories( "ply_lib" )
+
+
+#########################
+# eigen utilities lib
+SET(EIGEN_UTILITIES_SOURCE_FILES
+"EigenUtilities/EigenUtilities.cpp"
+)
+SET(EIGEN_UTILITIES_HEADER_FILES
+"EigenUtilities/EigenUtilities.h"
+"EigenUtilities/EigenUtilities.hpp"
+)
+add_library( eigen_utilities STATIC
+${EIGEN_UTILITIES_SOURCE_FILES}
+${EIGEN_UTILITIES_HEADER_FILES}
+)
+target_link_libraries(eigen_utilities ${Boost_LIBRARIES})
+IF(BUILD_SHARED_ALSO)
+add_library( eigen_utilities_shared SHARED
+${EIGEN_UTILITIES_SOURCE_FILES}
+${EIGEN_UTILITIES_HEADER_FILES}
+)
+target_link_libraries(eigen_utilities_shared ${Boost_LIBRARIES})
+ENDIF()
+include_directories( "EigenUtilities" )
+
+
+#########################
+# opencv utilities lib
+SET(OPENCV_UTILITIES_SOURCE_FILES
+"opencv_utilities/opencv_utilities.cpp"
+)
+SET(OPENCV_UTILITIES_HEADER_FILES
+"opencv_utilities/opencv_utilities.h"
+)
+add_library( opencv_utilities STATIC
+${OPENCV_UTILITIES_SOURCE_FILES}
+${OPENCV_UTILITIES_HEADER_FILES}
+)
+target_link_libraries(opencv_utilities ${OpenCV_LIBS})
+IF(BUILD_SHARED_ALSO)
+add_library( opencv_utilities_shared SHARED
+${OPENCV_UTILITIES_SOURCE_FILES}
+${OPENCV_UTILITIES_HEADER_FILES}
+)
+target_link_libraries(opencv_utilities_shared ${OpenCV_LIBS})
+ENDIF()
+include_directories( "opencv_utilities" )
+
+
+#########################
+# opencl static lib
+SET(OPENCL_STATIC_LIB_SOURCE_FILES
+"OpenCLStaticLib/ImageBuffer.cpp"
+"OpenCLStaticLib/Noise.cpp"
+"OpenCLStaticLib/OpenCLImages.cpp"
+"OpenCLStaticLib/OpenCLKernelsBuilder.cpp"
+"OpenCLStaticLib/OpenCLNormals.cpp"
+"OpenCLStaticLib/OpenCLOptimize.cpp"
+"OpenCLStaticLib/OpenCLTSDF.cpp"
+"OpenCLStaticLib/RenderBuffers.cpp"
+"OpenCLStaticLib/stdafx.cpp"
+"OpenCLStaticLib/util.cpp"
+"OpenCLStaticLib/cll.cpp"
+"OpenCLStaticLib/convertOpenCLEigen.cpp"
+"OpenCLStaticLib/CIsoSurface.cpp"
+"OpenCLStaticLib/Vectors.cpp"
+"OpenCLStaticLib/OpenCLAllKernels.cpp"
+)
+SET(OPENCL_STATIC_LIB_HEADER_FILES
+"OpenCLStaticLib/cll.h"
+"OpenCLStaticLib/convertOpenCLEigen.h"
+"OpenCLStaticLib/ImageBuffer.h"
+"OpenCLStaticLib/Noise.h"
+"OpenCLStaticLib/OpenCLImages.h"
+"OpenCLStaticLib/OpenCLKernelsBuilder.h"
+"OpenCLStaticLib/OpenCLNormals.h"
+"OpenCLStaticLib/OpenCLOptimize.h"
+"OpenCLStaticLib/OpenCLTSDF.h"
+"OpenCLStaticLib/RenderBuffers.h"
+"OpenCLStaticLib/RunLengthEncoding.hpp"
+"OpenCLStaticLib/stdafx.h"
+"OpenCLStaticLib/targetver.h"
+"OpenCLStaticLib/util.h"
+"OpenCLStaticLib/CIsoSurface.h"
+"OpenCLStaticLib/Vectors.h"
+"OpenCLStaticLib/OpenCLAllKernels.h"
+)
+add_library( opencl_static_lib STATIC
+${OPENCL_STATIC_LIB_SOURCE_FILES}
+${OPENCL_STATIC_LIB_HEADER_FILES}
+)
+target_link_libraries(opencl_static_lib ${Boost_LIBRARIES})
+target_link_libraries(opencl_static_lib ${OpenCV_LIBS})
+target_link_libraries(opencl_static_lib ${OPENCL_LIBRARIES})
+target_link_libraries(opencl_static_lib eigen_utilities)
+target_link_libraries(opencl_static_lib ply_lib)
+IF(BUILD_SHARED_ALSO)
+add_library( opencl_static_lib_shared SHARED
+${OPENCL_STATIC_LIB_SOURCE_FILES}
+${OPENCL_STATIC_LIB_HEADER_FILES}
+)
+target_link_libraries(opencl_static_lib_shared ${Boost_LIBRARIES})
+target_link_libraries(opencl_static_lib_shared ${OpenCV_LIBS})
+target_link_libraries(opencl_static_lib_shared ${OPENCL_LIBRARIES})
+target_link_libraries(opencl_static_lib_shared eigen_utilities_shared)
+target_link_libraries(opencl_static_lib_shared ply_lib_shared)
+ENDIF()
+include_directories( "OpenCLStaticLib" )
+
+
+#########################
+# alignment library
+SET(ALIGNMENT_LIB_SOURCE_FILES
+alignment/alignment.cpp
+)
+SET(ALIGNMENT_LIB_HEADER_FILES
+alignment/alignment.h
+alignment/params_alignment.h
+alignment/params_camera.h
+)
+add_library( alignment_lib STATIC
+${ALIGNMENT_LIB_SOURCE_FILES}
+${ALIGNMENT_LIB_HEADER_FILES}
+)
+target_link_libraries(alignment_lib ${Boost_LIBRARIES})
+target_link_libraries(alignment_lib ${OpenCV_LIBS})
+target_link_libraries(alignment_lib ${OPENCL_LIBRARIES})
+target_link_libraries(alignment_lib opencv_utilities)
+target_link_libraries(alignment_lib opencl_static_lib)
+IF(BUILD_SHARED_ALSO)
+add_library( alignment_lib_shared SHARED
+${ALIGNMENT_LIB_SOURCE_FILES}
+${ALIGNMENT_LIB_HEADER_FILES}
+)
+target_link_libraries(alignment_lib_shared ${Boost_LIBRARIES})
+target_link_libraries(alignment_lib_shared ${OpenCV_LIBS})
+target_link_libraries(alignment_lib_shared ${OPENCL_LIBRARIES})
+target_link_libraries(alignment_lib_shared opencv_utilities)
+target_link_libraries(alignment_lib_shared opencl_static_lib_shared)
+ENDIF()
+include_directories( "alignment" )
+
+
+#########
+# FRAME_PROVIDER_LIB (for test programs)
+SET(FRAME_PROVIDER_LIB_SOURCE_FILES
+frame_provider/frame_provider_file_wrapper.cpp
+frame_provider/frame_provider_png.cpp
+)
+SET(FRAME_PROVIDER_LIB_HEADER_FILES
+frame_provider/frame_provider_base.h
+frame_provider/frame_provider_file_wrapper.h
+frame_provider/frame_provider_png.h
+)
+
+IF (FRAME_PROVIDER_OPENNI2)
+SET(FRAME_PROVIDER_LIB_SOURCE_FILES
+${FRAME_PROVIDER_LIB_SOURCE_FILES}
+frame_provider/frame_provider_openni2.cpp
+)
+SET(FRAME_PROVIDER_LIB_HEADER_FILES
+${FRAME_PROVIDER_LIB_HEADER_FILES}
+frame_provider/frame_provider_openni2.h
+)
+ENDIF()
+
+IF (FRAME_PROVIDER_PCL)
+SET(FRAME_PROVIDER_LIB_SOURCE_FILES
+${FRAME_PROVIDER_LIB_SOURCE_FILES}
+frame_provider/frame_provider_pcd.cpp
+)
+SET(FRAME_PROVIDER_LIB_HEADER_FILES
+${FRAME_PROVIDER_LIB_HEADER_FILES}
+frame_provider/frame_provider_pcd.h
+)
+ENDIF()
+
+add_library(frame_provider_lib STATIC
+${FRAME_PROVIDER_LIB_SOURCE_FILES}
+${FRAME_PROVIDER_LIB_HEADER_FILES}
+)
+target_link_libraries(frame_provider_lib ${Boost_LIBRARIES})
+target_link_libraries(frame_provider_lib ${OpenCV_LIBS})
+IF (FRAME_PROVIDER_OPENNI2)
+target_link_libraries(frame_provider_lib OpenNI2 )
+ENDIF()
+IF (FRAME_PROVIDER_PCL)
+target_link_libraries(frame_provider_lib ${PCL_LIBRARIES} )
+ENDIF()
+
+IF(BUILD_SHARED_ALSO)
+add_library(frame_provider_lib_shared SHARED
+${FRAME_PROVIDER_LIB_SOURCE_FILES}
+${FRAME_PROVIDER_LIB_HEADER_FILES}
+)
+target_link_libraries(frame_provider_lib_shared ${Boost_LIBRARIES})
+target_link_libraries(frame_provider_lib_shared ${OpenCV_LIBS})
+IF (FRAME_PROVIDER_OPENNI2)
+target_link_libraries(frame_provider_lib_shared OpenNI2 )
+ENDIF()
+IF (FRAME_PROVIDER_PCL)
+target_link_libraries(frame_provider_lib_shared ${PCL_LIBRARIES} )
+ENDIF()
+ENDIF()
+include_directories( "frame_provider" )
+
+
+
+#ENDIF() # BUILD_LIBRARIES
+############################################################################
+
+
+
+#########################
+# alignment main (alignment by itself test)
+SET(ALIGNMENT_MAIN_SOURCE_FILES
+alignment_main/main.cpp
+)
+SET(ALIGNMENT_MAIN_HEADER_FILES
+)
+add_executable( alignment_main
+${ALIGNMENT_MAIN_SOURCE_FILES}
+${ALIGNMENT_MAIN_HEADER_FILES}
+)
+target_link_libraries(alignment_main alignment_lib)
+target_link_libraries(alignment_main frame_provider_lib)
+

@@ -1,0 +1,1 @@
+rsync -av `cat files_for_library.txt` .

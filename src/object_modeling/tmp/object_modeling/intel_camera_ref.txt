@@ -1,0 +1,41 @@
+TYZX camera:
+
+                FOCAL_X=364.8132
+
+                FOCAL_Y=364.8132
+
+ 
+
+                CENTER_X=148.4368
+
+                CENTER_Y=113.3995
+
+ 
+
+Creative Camera:
+
+            FOCAL_X = 224.502f;
+
+            FOCAL_Y = 230.494f;
+
+ 
+
+            CENTER_X = 160;
+
+            CENTER_Y = 120;
+
+ 
+
+ 
+
+Projection:
+
+For pixel coordinates (i,j) and depth (d), the world coordinates (x,y,z) are:
+
+ 
+
+                x=(i-CENTER_X)*d/FOCAL_X;
+
+                y=(CENTER_Y-j)*d/FOCAL_Y;
+
+                z=d

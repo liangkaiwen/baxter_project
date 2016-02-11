@@ -1,23 +1,14 @@
 <?xml version="1.0"?>
 <package>
-  <name>baxter_examples</name>
-  <version>1.1.1</version>
+  <name>baxter_project</name>
+  <version>1.2.0</version>
   <description>
-    Example programs for Baxter SDK usage.
+    Baxter Project
   </description>
 
-  <maintainer email="rsdk.support@rethinkrobotics.com">
-    Rethink Robotics Inc.
-  </maintainer>
+  <maintainer email="kevinl95@cs.washington.edu">Kevin Liang</maintainer>
   <license>BSD</license>
-  <url type="website">http://sdk.rethinkrobotics.com</url>
-  <url type="repository">
-    https://github.com/RethinkRobotics/baxter_examples
-  </url>
-  <url type="bugtracker">
-    https://github.com/RethinkRobotics/baxter_examples/issues
-  </url>
-  <author>Rethink Robotics Inc.</author>
+  <author>Kevin Liang</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 
@@ -30,6 +21,7 @@
   <build_depend>dynamic_reconfigure</build_depend>
   <build_depend>baxter_core_msgs</build_depend>
   <build_depend>baxter_interface</build_depend>
+  <build_depend>baxter_examples</build_depend>
 
   <run_depend>rospy</run_depend>
   <run_depend>actionlib</run_depend>
@@ -40,5 +32,6 @@
   <run_depend>dynamic_reconfigure</run_depend>
   <run_depend>baxter_core_msgs</run_depend>
   <run_depend>baxter_interface</run_depend>
+  <run_depend>baxter_examples</run_depend>
 
 </package>

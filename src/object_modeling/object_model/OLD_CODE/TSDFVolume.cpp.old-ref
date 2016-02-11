@@ -1,0 +1,650 @@
+#include "StdAfx.h"
+#include "TSDFVolume.h"
+
+using namespace std;
+
+TSDFVolume::TSDFVolume(const Parameters& params)
+	: params(params)
+{
+	// I guess I copy out of params so that params can create related values
+	voxel_size_ = params.volume_cell_size;
+	step_size_large_ = params.volume_step_size_large;
+	step_size_small_ = params.volume_step_size_small;
+	dims_ = Eigen::Vector3i(params.volume_cell_count, params.volume_cell_count, params.volume_cell_count);
+	xyz0_ = -dims_ / 2; // center at origin
+
+	// allocate volume
+	d_min_ = -params.volume_ramp_back; 
+	d_max_ = params.volume_ramp_front;
+	w_max_ = params.volume_max_weight;
+	max_render_depth_ = params.volume_max_render_depth;
+
+	mat_distances_ = cv::Mat(3, dims_.data(), CV_32F, cv::Scalar(d_min_));
+	mat_weights_ = cv::Mat(3, dims_.data(), CV_32F, cv::Scalar(0));
+	mat_colors_ = cv::Mat(3, dims_.data(), CV_8UC3, cv::Scalar::all(0));
+
+	proj_f_ = Eigen::Vector2f(params.camera_focal_x, params.camera_focal_y);
+	proj_c_ = Eigen::Vector2f(params.camera_center_x, params.camera_center_y);
+	projection_matrix_ = getProjectionMatrix(proj_f_, proj_c_);
+
+	volume_is_empty_ = true;
+}
+
+// don't need args?
+Eigen::Matrix3f TSDFVolume::getProjectionMatrix(const Eigen::Vector2f& focal_lengths, const Eigen::Vector2f& center) const
+{
+	Eigen::Matrix3f result = Eigen::Matrix3f::Zero();
+	result(0,0) = focal_lengths(0);
+	result(1,1) = focal_lengths(1);
+	result(0,2) = center(0);
+	result(1,2) = center(1);
+	result(2,2) = 1.0;
+	return result;
+}
+
+// don't need all args?
+void TSDFVolume::projectPoint(const Eigen::Matrix3f& proj, const Eigen::Vector3f& p, Eigen::Vector2f& pixel) const
+{
+	Eigen::Vector3f p_projected = proj * p;
+	pixel[0] = p_projected[0] / p_projected[2];
+	pixel[1] = p_projected[1] / p_projected[2];
+}
+
+Eigen::Vector3f TSDFVolume::voxelToWorld(const Eigen::Vector3i& voxel_coords) const
+{
+	return (voxel_coords + xyz0_).cast<float>() * voxel_size_;
+}
+
+Eigen::Vector3f TSDFVolume::worldToVoxelFloat(const Eigen::Vector3f& world_coords) const
+{
+	return (1.0 / voxel_size_) * world_coords - xyz0_.cast<float>();
+}
+
+Eigen::Vector3i TSDFVolume::roundVector3fToInt(const Eigen::Vector3f& float_v) const
+{
+	return Eigen::Vector3i( float_v[0] > 0 ? (int) (float_v[0] + 0.5) : (int)(float_v[0] - 0.5),
+							float_v[1] > 0 ? (int) (float_v[1] + 0.5) : (int)(float_v[1] - 0.5),
+							float_v[2] > 0 ? (int) (float_v[2] + 0.5) : (int)(float_v[2] - 0.5));
+}
+
+Eigen::Vector3i TSDFVolume::floorVector3fToInt(const Eigen::Vector3f& float_v) const
+{
+	return Eigen::Vector3i( (int)float_v[0], (int)float_v[1], (int)float_v[2] );
+}
+
+void TSDFVolume::addRangeImage(const Eigen::Affine3f& pose, const FrameT& frame)
+{
+	boost::mutex::scoped_lock lock(mtx);
+	volume_is_empty_ = false;
+
+	// naivest implementation is to go voxel by voxel, project onto range cloud, and update value
+	// so here we go!
+
+	// the range_rect specifies what fraction of the original frame is represented in the range_cloud
+	// not necessary when using image_depth
+	//Eigen::Vector2f put_in_cloud_roi(range_rect.x, range_rect.y);
+
+	#pragma omp parallel for
+	for (int v_x = 0; v_x < dims_[0]; ++v_x) {
+		for (int v_y = 0; v_y < dims_[1]; ++v_y) {
+			for (int v_z = 0; v_z < dims_[2]; ++v_z) {
+				// get voxel center in world space (note expensive transform here!)
+				//Eigen::Vector3f world_coords = pose * ((Eigen::Vector3i(v_x,v_y,v_z) + xyz0_).cast<float>() * voxel_size_);
+				Eigen::Vector3f world_coords = pose * voxelToWorld(Eigen::Vector3i(v_x,v_y,v_z));
+				
+				// project onto image_range
+				Eigen::Vector2f pixel_coords;
+				projectPoint(projection_matrix_, world_coords, pixel_coords);
+
+				// pull out of image_range
+				// round to nearest pixel
+				int pixel_col = (int) (pixel_coords[0] + 0.5);
+				int pixel_row = (int) (pixel_coords[1] + 0.5);
+				// skip out of bounds for masks
+				if (pixel_col < 0 || pixel_col >= frame.object_mask.cols ||
+					pixel_row < 0 || pixel_row >= frame.object_mask.rows) continue;
+				// skip "no reading" depth values
+				// used to use mask_without_hand (basically equivalent to depth_mask for this purpose)
+				//if (!frame.depth_mask_without_hand.at<uchar> (pixel_row, pixel_col)) continue;
+				// instead just use object mask (avoid carving off sides)
+				// we also check later and only add pixels in the object mask, but let's just carve with them too
+				if (!frame.object_mask.at<uchar> (pixel_row, pixel_col)) continue;
+
+				// For this voxel, compute the distance to the surface measured by the range image
+				MAT_D_T d;
+				if (params.volume_use_depth_difference_for_d) {
+					// could just do z compononent (matches my OpenCL experiment)
+					 d = frame.image_depth.at<float>(pixel_row, pixel_col) - world_coords[2];
+				}
+				else {
+					// This uses distance from camera center (along ray):
+					// This is more accurate and is what I was using
+					d = frame.cloud_ptr->at(pixel_col, pixel_row).getVector3fMap().norm() - world_coords.norm();
+				}
+				
+
+				//cout << "v_x, v_y, v_z, d:" << v_x << " " << v_y << " " << v_z << " " << d << endl;
+
+				// This means that the voxel is far past the depth measurement...no carve
+				if (d < d_min_) continue;
+
+				// now we may actually need to modify the voxels
+				MAT_D_T& mat_d = mat_distances_.at<MAT_D_T>(v_x, v_y, v_z);
+				MAT_W_T& mat_w = mat_weights_.at<MAT_W_T>(v_x, v_y, v_z);
+				// colors as well:
+				cv::Vec3b& mat_c = mat_colors_.at<cv::Vec3b>(v_x, v_y, v_z);
+				const cv::Vec3b& c = frame.image_color.at<cv::Vec3b>(pixel_row, pixel_col);
+
+				// this was ok, but Richard N says weight empty cells
+#if 0
+				// if the measurement would put this voxel in front of the surface, carve it
+				if (d > d_ramp_) {
+					if (do_carving_) {
+						// don't immediately set to 0, instead just decrement weight
+						--mat_w;
+						if (mat_w <= 0) {
+							mat_d = d_max_;
+							mat_w = 0;
+							mat_c = cv::Vec3b(0,0,0);
+						}
+					}
+					else {
+						continue; // this is just like the other extreme case if no carving
+					}
+				}
+				else {
+					// actually within the truncated range (so rare!!)
+					// only add surface readings when it's an object pixel
+					if (!frame.object_mask.at<uchar>(pixel_row, pixel_col)) continue;
+
+					static const MAT_W_T w_new = 1; // could vary with certainty (cos(normal))
+					const MAT_W_T& w_old = mat_w;
+					MAT_W_T w_sum = w_old + w_new;
+					mat_d = (w_old * mat_d + w_new * d) / w_sum;
+					// color
+					// This does the same average: (doesn't work)
+					//mat_c = (mat_c * w_old + c * w_new) * (1.0 / w_sum);
+					// instead try simply replacing? (works)
+					//mat_c = c;
+					cv::addWeighted(mat_c, w_old/w_sum, c, w_new/w_sum, 0, mat_c);
+
+					// cap the weight
+					mat_w = min(w_max_, w_sum);
+				}
+#else
+				// This is the "only" new thing here:
+				// Notice no carving check....
+				d = min(d, d_max_);
+
+				static const MAT_W_T w_new = 1; // could vary with certainty (cos(normal))
+				const MAT_W_T& w_old = mat_w;
+				MAT_W_T w_sum = w_old + w_new;
+				mat_d = (w_old * mat_d + w_new * d) / w_sum;
+
+				// only update color if this is within the truncation
+				if (d < d_max_) {
+					// This is slow and stupid:
+					if (params.volume_use_min_color && w_old > 0) {
+						static const Eigen::Vector3f to_intensity(0.299,0.587,0.114);
+						Eigen::Vector3f old_color(mat_c[2], mat_c[1], mat_c[0]);
+						Eigen::Vector3f new_color(c[2], c[1], c[0]);
+						float old_intensity = to_intensity.dot(old_color);
+						float new_intensity = to_intensity.dot(new_color);
+						if (new_intensity < old_intensity) {
+							mat_c = c;
+						}
+					}
+					else {
+						cv::addWeighted(mat_c, w_old/w_sum, c, w_new/w_sum, 0, mat_c);
+					}
+				}
+
+				// cap the weight
+				mat_w = min(w_max_, w_sum);
+#endif
+
+			}
+		}
+	}
+}
+
+std::vector<Eigen::Vector3f> TSDFVolume::getVolumeCorners(const Eigen::Affine3f& pose) const
+{
+	vector<Eigen::Vector3f> result;
+	Eigen::Vector3i max_voxel = dims_ - Eigen::Vector3i(1,1,1);
+	// 000
+	result.push_back(pose*voxelToWorld(Eigen::Vector3i(0,0,0)));
+	// 001
+	result.push_back(pose*voxelToWorld(Eigen::Vector3i(0,0,max_voxel[2])));
+	// 010
+	result.push_back(pose*voxelToWorld(Eigen::Vector3i(0,max_voxel[1],0)));
+	// 011
+	result.push_back(pose*voxelToWorld(Eigen::Vector3i(0,max_voxel[1],max_voxel[2])));
+	// 100
+	result.push_back(pose*voxelToWorld(Eigen::Vector3i(max_voxel[0],0,0)));
+	// 101
+	result.push_back(pose*voxelToWorld(Eigen::Vector3i(max_voxel[0],0,max_voxel[2])));
+	// 110
+	result.push_back(pose*voxelToWorld(Eigen::Vector3i(max_voxel[0],max_voxel[1],0)));
+	// 111
+	result.push_back(pose*voxelToWorld(Eigen::Vector3i(max_voxel[0],max_voxel[1],max_voxel[2])));
+
+	return result;
+}
+
+std::vector<std::pair<Eigen::Vector3f, TSDFVolume::MAT_D_T> > TSDFVolume::getNonzeroFilteredVoxelCenters(const Eigen::Affine3f& pose, float d_epsilon) const
+{
+	boost::mutex::scoped_lock lock(mtx);
+	std::vector<std::pair<Eigen::Vector3f, TSDFVolume::MAT_D_T> > result;
+	for (int v_x = 0; v_x < dims_[0]; ++v_x) {
+		for (int v_y = 0; v_y < dims_[1]; ++v_y) {
+			for (int v_z = 0; v_z < dims_[2]; ++v_z) {
+				if (mat_weights_.at<MAT_W_T>(v_x, v_y, v_z)) {
+					MAT_D_T d = mat_distances_.at<MAT_D_T>(v_x, v_y, v_z);
+					if (d + d_epsilon < d_max_ && d - d_epsilon > d_min_) {
+						result.push_back(std::make_pair(pose*voxelToWorld(Eigen::Vector3i(v_x,v_y,v_z)), d));
+					}
+				}
+			}
+		}
+	}
+	return result;
+}
+
+void TSDFVolume::renderRangeImage(const Eigen::Affine3f& pose, 
+	const Eigen::Vector2f& proj_f, const Eigen::Vector2f& proj_c, 
+	const cv::Rect& range_rect, CloudT& point_cloud, pcl::PointCloud<pcl::Normal>& normal_cloud) const
+{
+	boost::mutex::scoped_lock lock(mtx);
+
+	//#define DO_DEBUG_RAY_POINTS
+#ifdef DO_DEBUG_RAY_POINTS
+	debug_ray_points_.clear();
+#endif
+
+	// currently make a cloud the size of range_rect
+	// todo: consider opencv images or unorganized clouds?
+	point_cloud.width = range_rect.width;
+	point_cloud.height = range_rect.height;
+	point_cloud.points.resize(point_cloud.width * point_cloud.height);
+	point_cloud.is_dense = false;
+	// consistent normal cloud
+	normal_cloud.width = range_rect.width;
+	normal_cloud.height = range_rect.height;
+	normal_cloud.points.resize(normal_cloud.width * normal_cloud.height);
+	normal_cloud.is_dense = false;
+
+	Eigen::Affine3f inverse_pose = pose.inverse();
+	Eigen::Vector3f camera_center = inverse_pose * Eigen::Vector3f(0,0,0);
+	cv::Point tl = range_rect.tl();
+	cv::Point br = range_rect.br();
+	Eigen::Matrix3f pose_rotation = pose.rotation();
+	#pragma omp parallel for
+	for (int row = tl.y; row < br.y; row++) {
+		for (int col = tl.x; col < br.x; col++) {
+			// initialize point to nans
+			PointT& p = point_cloud.at(col - tl.x, row - tl.y);
+			p.x = p.y = p.z = numeric_limits<float>::quiet_NaN();
+			p.r = p.g = p.b = 255; // shouldn't show up
+			pcl::Normal& p_n = normal_cloud.at(col - tl.x, row - tl.y);
+			p_n.normal_x = p_n.normal_y = p_n.normal_z = numeric_limits<float>::quiet_NaN();
+
+			// forward ray get transformed by inverse_pose
+			// actual pixel ray (as opposed to optical axis used in kinect fusion)
+			Eigen::Vector3f pixel_on_focal ((col - proj_c[0])/proj_f[0], (row - proj_c[1])/proj_f[1], 1);
+			Eigen::Vector3f pixel_transformed = inverse_pose * pixel_on_focal;
+			Eigen::Vector3f ray_unit_v = (pixel_transformed - camera_center).normalized();
+
+			// conservatively march by steps of size "voxel_size  * step_size_multiple_of_voxel_size_;"
+			// starting at camera center
+			bool found_surface_voxel = false;
+			float t = 0; 
+			float mat_d = d_max_;
+			float mat_d_previous = d_max_;
+
+			// this is for debugging:
+#ifdef DO_DEBUG_RAY_POINTS
+			debug_ray_points_.push_back(vector<Eigen::Vector3f>());
+			vector<Eigen::Vector3f>& debug_this_ray_vec = debug_ray_points_.back();
+#endif
+
+			// initialize at a single step
+			for (t += step_size_small_ ; t <= max_render_depth_; t += step_size_small_) {
+				// point in centered volume space
+				Eigen::Vector3f volume_point = camera_center + t * ray_unit_v;
+				Eigen::Vector3f id_f = worldToVoxelFloat(volume_point);
+
+#ifdef DO_DEBUG_RAY_POINTS
+				debug_this_ray_vec.push_back(pose * volume_point);
+#endif
+
+				// check for never intersecting volume (just an optimization):
+				if (id_f[0] < 0 && ray_unit_v[0] < 0) break;
+				if (id_f[0] >= dims_[0] && ray_unit_v[0] > 0) break;
+				if (id_f[1] < 0 && ray_unit_v[1] < 0) break;
+				if (id_f[1] >= dims_[1] && ray_unit_v[1] > 0) break;
+				if (id_f[2] < 0 && ray_unit_v[2] < 0) break;
+				if (id_f[2] >= dims_[2] && ray_unit_v[2] > 0) break;
+
+				// This version makes sure we have surrounding WEIGHTED voxels for interpolation:
+				bool can_get_d_value = checkSurroundingVoxelsAreWithinVolume(id_f) && checkAllHaveWeights(id_f);
+				//bool can_get_d_value = checkSurroundingVoxelsAreWithinVolume(id_f);
+				if (!can_get_d_value) {
+					mat_d_previous = d_max_;
+					continue;
+				}
+
+				mat_d = trilinearInterpolate(id_f);
+				// if we used to be inside, and now we're outside, we went through backwards so break with no surface
+				if (mat_d > 0 && mat_d_previous < 0) {
+					break;
+				}
+
+				// if we used to be outside, and now we're inside, we have a surface
+				if (mat_d < 0 && mat_d_previous > 0 && mat_d_previous < d_max_) {
+					found_surface_voxel = true;
+					break;
+				}
+				mat_d_previous = mat_d;
+			}
+			if (found_surface_voxel) {
+				float t_previous = t - step_size_small_;
+				// based on the previous logic, we already trust our mat_d_previous and mat_d values
+				// you could check them using the below code though...
+				// do the (15) interpolation from KinFu ISMAR paper (BUT DO IT CORRECTLY, YOU FOOL!)
+				float t_star = t_previous - (t - t_previous) * mat_d_previous / (mat_d - mat_d_previous);
+					
+#if 0
+				// more debug
+				cout << "d: " << mat_d << endl;
+				cout << "d_previous: " << mat_d_previous << endl;
+				cout << "t: " << t << endl;
+				cout << "t_previous: " << t_previous << endl;
+				cout << "t_star: " << t_star << endl;
+				cout << endl;
+#endif
+				// compute the 3d coordinates for this optimal point (in voxel metric space)
+				Eigen::Vector3f t_star_point = camera_center + t_star * ray_unit_v;
+
+				// compute the normal
+				Eigen::Vector3f id_t_star = worldToVoxelFloat(t_star_point);
+				static const Eigen::Vector3f normal_delta_v(params.normals_volume_delta, params.normals_volume_delta, params.normals_volume_delta);
+				static const Eigen::Vector3f normal_delta_v_x(params.normals_volume_delta, 0, 0);
+				static const Eigen::Vector3f normal_delta_v_y(0, params.normals_volume_delta, 0);
+				static const Eigen::Vector3f normal_delta_v_z(0, 0, params.normals_volume_delta);
+				Eigen::Vector3f id_t_star_check_pos = id_t_star + normal_delta_v;
+
+				Eigen::Vector3f normal;
+				bool got_normal = false;
+
+				if (params.normals_volume_symmetrical) {
+					// was doing this, but I think it's wasteful:
+					Eigen::Vector3f id_t_star_check_neg = id_t_star - normal_delta_v;
+					if (checkSurroundingVoxelsAreWithinVolume(id_t_star_check_neg) && checkSurroundingVoxelsAreWithinVolume(id_t_star_check_pos)) {
+						Eigen::Vector3f id_t_star_x_pos = id_t_star + normal_delta_v_x;
+						Eigen::Vector3f id_t_star_y_pos = id_t_star + normal_delta_v_y;
+						Eigen::Vector3f id_t_star_z_pos = id_t_star + normal_delta_v_z;
+						Eigen::Vector3f id_t_star_x_neg = id_t_star - normal_delta_v_x;
+						Eigen::Vector3f id_t_star_y_neg = id_t_star - normal_delta_v_y;
+						Eigen::Vector3f id_t_star_z_neg = id_t_star - normal_delta_v_z;
+
+						float d_t_star_x_pos = trilinearInterpolate(id_t_star_x_pos);
+						float d_t_star_y_pos = trilinearInterpolate(id_t_star_y_pos);
+						float d_t_star_z_pos = trilinearInterpolate(id_t_star_z_pos);
+						float d_t_star_x_neg = trilinearInterpolate(id_t_star_x_neg);
+						float d_t_star_y_neg = trilinearInterpolate(id_t_star_y_neg);
+						float d_t_star_z_neg = trilinearInterpolate(id_t_star_z_neg);
+
+						normal = Eigen::Vector3f(d_t_star_x_pos - d_t_star_x_neg, d_t_star_y_pos - d_t_star_y_neg, d_t_star_z_pos - d_t_star_z_neg);
+						normal.normalize();
+						got_normal = true;
+					}
+				}
+				else {
+					if (checkSurroundingVoxelsAreWithinVolume(id_t_star) && checkSurroundingVoxelsAreWithinVolume(id_t_star_check_pos)) {
+						Eigen::Vector3f id_t_star_x_pos = id_t_star + normal_delta_v_x;
+						Eigen::Vector3f id_t_star_y_pos = id_t_star + normal_delta_v_y;
+						Eigen::Vector3f id_t_star_z_pos = id_t_star + normal_delta_v_z;
+
+						// could also assume this d_t_star is 0 (which is of course the goal)
+						float d_t_star = trilinearInterpolate(id_t_star);
+						float d_t_star_x_pos = trilinearInterpolate(id_t_star_x_pos);
+						float d_t_star_y_pos = trilinearInterpolate(id_t_star_y_pos);
+						float d_t_star_z_pos = trilinearInterpolate(id_t_star_z_pos);
+
+						normal = Eigen::Vector3f(d_t_star_x_pos - d_t_star, d_t_star_y_pos - d_t_star, d_t_star_z_pos - d_t_star);
+						normal.normalize();
+						got_normal = true;
+					}
+				}
+
+				if (got_normal) {
+					Eigen::Vector3f normal_relative_to_camera = pose_rotation * normal;
+
+					// set the values for the normal p_n
+					p_n.getNormalVector3fMap() = normal_relative_to_camera;
+
+					// set the values for the point p
+					Eigen::Vector3f t_star_point_relative_to_camera = pose * t_star_point;
+					p.getVector3fMap() = t_star_point_relative_to_camera;
+					cv::Vec3b color = trilinearInterpolateColor(id_t_star);
+					p.r = color[2];
+					p.g = color[1];
+					p.b = color[0];
+				}
+			}
+		}
+	}
+}
+
+float TSDFVolume::trilinearInterpolate(const Eigen::Vector3f& voxel_coords_f) const
+{
+#if 0
+	float a = (point.x - (g.x + 0.5f) * cell_size.x) / cell_size.x;
+	float b = (point.y - (g.y + 0.5f) * cell_size.y) / cell_size.y;
+	float c = (point.z - (g.z + 0.5f) * cell_size.z) / cell_size.z;
+
+	float res = readTsdf (g.x + 0, g.y + 0, g.z + 0) * (1 - a) * (1 - b) * (1 - c) +
+				readTsdf (g.x + 0, g.y + 0, g.z + 1) * (1 - a) * (1 - b) * c +
+				readTsdf (g.x + 0, g.y + 1, g.z + 0) * (1 - a) * b * (1 - c) +
+				readTsdf (g.x + 0, g.y + 1, g.z + 1) * (1 - a) * b * c +
+				readTsdf (g.x + 1, g.y + 0, g.z + 0) * a * (1 - b) * (1 - c) +
+				readTsdf (g.x + 1, g.y + 0, g.z + 1) * a * (1 - b) * c +
+				readTsdf (g.x + 1, g.y + 1, g.z + 0) * a * b * (1 - c) +
+				readTsdf (g.x + 1, g.y + 1, g.z + 1) * a * b * c;
+#endif
+
+	Eigen::Vector3i floor_corner = floorVector3fToInt(voxel_coords_f);
+	Eigen::Vector3f offset = voxel_coords_f - floor_corner.cast<float>();
+
+	const MAT_D_T& d_000 = mat_distances_.at<MAT_D_T>(floor_corner[0], floor_corner[1], floor_corner[2]);
+	const MAT_D_T& d_001 = mat_distances_.at<MAT_D_T>(floor_corner[0], floor_corner[1], floor_corner[2]+1);
+	const MAT_D_T& d_010 = mat_distances_.at<MAT_D_T>(floor_corner[0], floor_corner[1]+1, floor_corner[2]);
+	const MAT_D_T& d_011 = mat_distances_.at<MAT_D_T>(floor_corner[0], floor_corner[1]+1, floor_corner[2]+1);
+	const MAT_D_T& d_100 = mat_distances_.at<MAT_D_T>(floor_corner[0]+1, floor_corner[1], floor_corner[2]);
+	const MAT_D_T& d_101 = mat_distances_.at<MAT_D_T>(floor_corner[0]+1, floor_corner[1], floor_corner[2]+1);
+	const MAT_D_T& d_110 = mat_distances_.at<MAT_D_T>(floor_corner[0]+1, floor_corner[1]+1, floor_corner[2]);
+	const MAT_D_T& d_111 = mat_distances_.at<MAT_D_T>(floor_corner[0]+1, floor_corner[1]+1, floor_corner[2]+1);
+
+	float off_x = offset[0];
+	float off_y = offset[1];
+	float off_z = offset[2];
+
+	float result =		  d_000 * (1 - off_x) * (1 - off_y) * (1 - off_z)
+						+ d_001 * (1 - off_x) * (1 - off_y) * (off_z)
+						+ d_010 * (1 - off_x) * (off_y) * (1 - off_z)
+						+ d_011 * (1 - off_x) * (off_y) * (off_z)
+						+ d_100 * (off_x) * (1 - off_y) * (1 - off_z)
+						+ d_101 * (off_x) * (1 - off_y) * (off_z)
+						+ d_110 * (off_x) * (off_y) * (1 - off_z)
+						+ d_111 * (off_x) * (off_y) * (off_z);
+
+	return result;
+}
+
+float TSDFVolume::trilinearInterpolateWeighted(const Eigen::Vector3f& voxel_coords_f) const
+{
+	Eigen::Vector3i floor_corner = floorVector3fToInt(voxel_coords_f);
+	Eigen::Vector3f offset = voxel_coords_f - floor_corner.cast<float>();
+
+	const MAT_D_T& d_000 = mat_distances_.at<MAT_D_T>(floor_corner[0], floor_corner[1], floor_corner[2]);
+	const MAT_D_T& d_001 = mat_distances_.at<MAT_D_T>(floor_corner[0], floor_corner[1], floor_corner[2]+1);
+	const MAT_D_T& d_010 = mat_distances_.at<MAT_D_T>(floor_corner[0], floor_corner[1]+1, floor_corner[2]);
+	const MAT_D_T& d_011 = mat_distances_.at<MAT_D_T>(floor_corner[0], floor_corner[1]+1, floor_corner[2]+1);
+	const MAT_D_T& d_100 = mat_distances_.at<MAT_D_T>(floor_corner[0]+1, floor_corner[1], floor_corner[2]);
+	const MAT_D_T& d_101 = mat_distances_.at<MAT_D_T>(floor_corner[0]+1, floor_corner[1], floor_corner[2]+1);
+	const MAT_D_T& d_110 = mat_distances_.at<MAT_D_T>(floor_corner[0]+1, floor_corner[1]+1, floor_corner[2]);
+	const MAT_D_T& d_111 = mat_distances_.at<MAT_D_T>(floor_corner[0]+1, floor_corner[1]+1, floor_corner[2]+1);
+
+	// could get the actual weights
+#if 0
+	const MAT_W_T& w_000 = mat_weights_.at<MAT_W_T>(floor_corner[0], floor_corner[1], floor_corner[2]);
+	const MAT_W_T& w_001 = mat_weights_.at<MAT_W_T>(floor_corner[0], floor_corner[1], floor_corner[2]+1);
+	const MAT_W_T& w_010 = mat_weights_.at<MAT_W_T>(floor_corner[0], floor_corner[1]+1, floor_corner[2]);
+	const MAT_W_T& w_011 = mat_weights_.at<MAT_W_T>(floor_corner[0], floor_corner[1]+1, floor_corner[2]+1);
+	const MAT_W_T& w_100 = mat_weights_.at<MAT_W_T>(floor_corner[0]+1, floor_corner[1], floor_corner[2]);
+	const MAT_W_T& w_101 = mat_weights_.at<MAT_W_T>(floor_corner[0]+1, floor_corner[1], floor_corner[2]+1);
+	const MAT_W_T& w_110 = mat_weights_.at<MAT_W_T>(floor_corner[0]+1, floor_corner[1]+1, floor_corner[2]);
+	const MAT_W_T& w_111 = mat_weights_.at<MAT_W_T>(floor_corner[0]+1, floor_corner[1]+1, floor_corner[2]+1);
+#endif
+	// or 0 / 1 ints:
+	int w_000 = mat_weights_.at<MAT_W_T>(floor_corner[0], floor_corner[1], floor_corner[2]) ? 1 : 0;
+	int w_001 = mat_weights_.at<MAT_W_T>(floor_corner[0], floor_corner[1], floor_corner[2]+1) ? 1 : 0;
+	int w_010 = mat_weights_.at<MAT_W_T>(floor_corner[0], floor_corner[1]+1, floor_corner[2]) ? 1 : 0;
+	int w_011 = mat_weights_.at<MAT_W_T>(floor_corner[0], floor_corner[1]+1, floor_corner[2]+1) ? 1 : 0;
+	int w_100 = mat_weights_.at<MAT_W_T>(floor_corner[0]+1, floor_corner[1], floor_corner[2]) ? 1 : 0;
+	int w_101 = mat_weights_.at<MAT_W_T>(floor_corner[0]+1, floor_corner[1], floor_corner[2]+1) ? 1 : 0;
+	int w_110 = mat_weights_.at<MAT_W_T>(floor_corner[0]+1, floor_corner[1]+1, floor_corner[2]) ? 1 : 0;
+	int w_111 = mat_weights_.at<MAT_W_T>(floor_corner[0]+1, floor_corner[1]+1, floor_corner[2]+1) ? 1 : 0;
+
+	float off_x = offset[0];
+	float off_y = offset[1];
+	float off_z = offset[2];
+
+	float result =		  w_000 ? d_000 * (1 - off_x) * (1 - off_y) * (1 - off_z) : 0
+						+ w_001 ? d_001 * (1 - off_x) * (1 - off_y) * (off_z) : 0
+						+ w_010 ? d_010 * (1 - off_x) * (off_y) * (1 - off_z) : 0
+						+ w_011 ? d_011 * (1 - off_x) * (off_y) * (off_z) : 0
+						+ w_100 ? d_100 * (off_x) * (1 - off_y) * (1 - off_z) : 0
+						+ w_101 ? d_101 * (off_x) * (1 - off_y) * (off_z) : 0
+						+ w_110 ? d_110 * (off_x) * (off_y) * (1 - off_z) : 0
+						+ w_111 ? d_111 * (off_x) * (off_y) * (off_z) : 0;
+
+	int weight_sum = w_000 + w_001 + w_010 + w_011 + w_100 + w_101 + w_110 + w_111;
+
+	// This does happen...
+	if (weight_sum == 0) return d_min_;
+
+	return result * (8 / weight_sum);
+}
+
+cv::Vec3b TSDFVolume::trilinearInterpolateColor(const Eigen::Vector3f& voxel_coords_f) const
+{
+	Eigen::Vector3i floor_corner = floorVector3fToInt(voxel_coords_f);
+	Eigen::Vector3f offset = voxel_coords_f - floor_corner.cast<float>();
+
+	const cv::Vec3b& d_000 = mat_colors_.at<cv::Vec3b>(floor_corner[0], floor_corner[1], floor_corner[2]);
+	const cv::Vec3b& d_001 = mat_colors_.at<cv::Vec3b>(floor_corner[0], floor_corner[1], floor_corner[2]+1);
+	const cv::Vec3b& d_010 = mat_colors_.at<cv::Vec3b>(floor_corner[0], floor_corner[1]+1, floor_corner[2]);
+	const cv::Vec3b& d_011 = mat_colors_.at<cv::Vec3b>(floor_corner[0], floor_corner[1]+1, floor_corner[2]+1);
+	const cv::Vec3b& d_100 = mat_colors_.at<cv::Vec3b>(floor_corner[0]+1, floor_corner[1], floor_corner[2]);
+	const cv::Vec3b& d_101 = mat_colors_.at<cv::Vec3b>(floor_corner[0]+1, floor_corner[1], floor_corner[2]+1);
+	const cv::Vec3b& d_110 = mat_colors_.at<cv::Vec3b>(floor_corner[0]+1, floor_corner[1]+1, floor_corner[2]);
+	const cv::Vec3b& d_111 = mat_colors_.at<cv::Vec3b>(floor_corner[0]+1, floor_corner[1]+1, floor_corner[2]+1);
+
+	float off_x = offset[0];
+	float off_y = offset[1];
+	float off_z = offset[2];
+
+	// Todo:  This could be bad for bytes...
+	cv::Vec3b result =	  d_000 * (1 - off_x) * (1 - off_y) * (1 - off_z)
+						+ d_001 * (1 - off_x) * (1 - off_y) * (off_z)
+						+ d_010 * (1 - off_x) * (off_y) * (1 - off_z)
+						+ d_011 * (1 - off_x) * (off_y) * (off_z)
+						+ d_100 * (off_x) * (1 - off_y) * (1 - off_z)
+						+ d_101 * (off_x) * (1 - off_y) * (off_z)
+						+ d_110 * (off_x) * (off_y) * (1 - off_z)
+						+ d_111 * (off_x) * (off_y) * (off_z);
+
+	return result;
+}
+
+cv::Vec3b TSDFVolume::floorTestColor(const Eigen::Vector3f& voxel_coords_f) const
+{
+	Eigen::Vector3i floor_corner = floorVector3fToInt(voxel_coords_f);
+	cv::Vec3b result = mat_colors_.at<cv::Vec3b>(floor_corner[0], floor_corner[1], floor_corner[2]);
+	//cout << result[0] << " " << result[1] << " " << result[2] << endl;
+	return result;
+}
+
+
+bool TSDFVolume::checkSurroundingVoxelsAreWithinVolume(const Eigen::Vector3f& voxel_coords_f) const
+{
+	Eigen::Vector3i floor_corner = floorVector3fToInt(voxel_coords_f);
+
+	if (floor_corner[0] < 0 || floor_corner[0] >= dims_[0] - 1 ||
+		floor_corner[1] < 0 || floor_corner[1] >= dims_[1] - 1 ||
+		floor_corner[2] < 0 || floor_corner[2] >= dims_[2] - 1) return false;
+	else return true;
+}
+
+bool TSDFVolume::checkIntVoxelIsWithinVolume(const Eigen::Vector3i& voxel_coords_i) const
+{
+	if (voxel_coords_i[0] < 0 || voxel_coords_i[0] >= dims_[0] ||
+		voxel_coords_i[1] < 0 || voxel_coords_i[1] >= dims_[1] ||
+		voxel_coords_i[2] < 0 || voxel_coords_i[2] >= dims_[2] ) return false;
+	else return true;
+}
+
+bool TSDFVolume::checkAllHaveWeights(const Eigen::Vector3f& voxel_coords_f) const
+{
+	Eigen::Vector3i floor_corner = floorVector3fToInt(voxel_coords_f);
+
+#if 0
+	// could shortcircuit this!!
+	const MAT_W_T& w_000 = mat_weights_.at<MAT_W_T>(floor_corner[0], floor_corner[1], floor_corner[2]);
+	const MAT_W_T& w_001 = mat_weights_.at<MAT_W_T>(floor_corner[0], floor_corner[1], floor_corner[2]+1);
+	const MAT_W_T& w_010 = mat_weights_.at<MAT_W_T>(floor_corner[0], floor_corner[1]+1, floor_corner[2]);
+	const MAT_W_T& w_011 = mat_weights_.at<MAT_W_T>(floor_corner[0], floor_corner[1]+1, floor_corner[2]+1);
+	const MAT_W_T& w_100 = mat_weights_.at<MAT_W_T>(floor_corner[0]+1, floor_corner[1], floor_corner[2]);
+	const MAT_W_T& w_101 = mat_weights_.at<MAT_W_T>(floor_corner[0]+1, floor_corner[1], floor_corner[2]+1);
+	const MAT_W_T& w_110 = mat_weights_.at<MAT_W_T>(floor_corner[0]+1, floor_corner[1]+1, floor_corner[2]);
+	const MAT_W_T& w_111 = mat_weights_.at<MAT_W_T>(floor_corner[0]+1, floor_corner[1]+1, floor_corner[2]+1);
+
+	bool result = w_000 && w_001 && w_010 && w_011 && w_100 && w_101 && w_110 && w_111;
+	return result;
+#else
+	if (!mat_weights_.at<MAT_W_T>(floor_corner[0], floor_corner[1], floor_corner[2])) return false;
+	if (!mat_weights_.at<MAT_W_T>(floor_corner[0], floor_corner[1], floor_corner[2]+1)) return false;
+	if (!mat_weights_.at<MAT_W_T>(floor_corner[0], floor_corner[1]+1, floor_corner[2])) return false;
+	if (!mat_weights_.at<MAT_W_T>(floor_corner[0], floor_corner[1]+1, floor_corner[2]+1)) return false;
+	if (!mat_weights_.at<MAT_W_T>(floor_corner[0]+1, floor_corner[1], floor_corner[2])) return false;
+	if (!mat_weights_.at<MAT_W_T>(floor_corner[0]+1, floor_corner[1], floor_corner[2]+1)) return false;
+	if (!mat_weights_.at<MAT_W_T>(floor_corner[0]+1, floor_corner[1]+1, floor_corner[2])) return false;
+	if (!mat_weights_.at<MAT_W_T>(floor_corner[0]+1, floor_corner[1]+1, floor_corner[2]+1)) return false;
+	return true;
+#endif
+}
+
+bool TSDFVolume::checkAnyHaveWeights(const Eigen::Vector3f& voxel_coords_f) const
+{
+	Eigen::Vector3i floor_corner = floorVector3fToInt(voxel_coords_f);
+
+	// could shortcircuit this!!
+	const MAT_W_T& w_000 = mat_weights_.at<MAT_W_T>(floor_corner[0], floor_corner[1], floor_corner[2]);
+	const MAT_W_T& w_001 = mat_weights_.at<MAT_W_T>(floor_corner[0], floor_corner[1], floor_corner[2]+1);
+	const MAT_W_T& w_010 = mat_weights_.at<MAT_W_T>(floor_corner[0], floor_corner[1]+1, floor_corner[2]);
+	const MAT_W_T& w_011 = mat_weights_.at<MAT_W_T>(floor_corner[0], floor_corner[1]+1, floor_corner[2]+1);
+	const MAT_W_T& w_100 = mat_weights_.at<MAT_W_T>(floor_corner[0]+1, floor_corner[1], floor_corner[2]);
+	const MAT_W_T& w_101 = mat_weights_.at<MAT_W_T>(floor_corner[0]+1, floor_corner[1], floor_corner[2]+1);
+	const MAT_W_T& w_110 = mat_weights_.at<MAT_W_T>(floor_corner[0]+1, floor_corner[1]+1, floor_corner[2]);
+	const MAT_W_T& w_111 = mat_weights_.at<MAT_W_T>(floor_corner[0]+1, floor_corner[1]+1, floor_corner[2]+1);
+
+	bool result = w_000 || w_001 || w_010 || w_011 || w_100 || w_101 || w_110 || w_111;
+	return result;
+}
+
+bool TSDFVolume::isPointInVolume(const Eigen::Vector3f& p) const
+{
+	return checkSurroundingVoxelsAreWithinVolume(worldToVoxelFloat(p));
+}

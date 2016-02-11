@@ -1,0 +1,1241 @@
+#pragma once
+
+#include "typedefs.h"
+#include "parameters.h"
+#include "runningStatistics.h"
+#include "cloudToImage.hpp"
+
+//#define USE_OPENMP_FOR_FUNCTOR
+
+//#define CHECK_OPENCL_ERROR
+//#define CHECK_OPENCL_DF
+#define OPENCL_TEST_EPSILON (1e-4)
+
+template <typename Scalar>
+class ICPCombinedFunctor
+{
+public:
+	// boilerplate for EigenLM functor:
+	typedef Scalar Scalar;
+	enum {
+		InputsAtCompileTime = Eigen::Dynamic,
+		//InputsAtCompileTime = 6,
+		ValuesAtCompileTime = Eigen::Dynamic
+	};
+	typedef Eigen::Matrix<Scalar,InputsAtCompileTime,1> InputType;
+	typedef Eigen::Matrix<Scalar,ValuesAtCompileTime,1> ValueType;
+	typedef Eigen::Matrix<Scalar,ValuesAtCompileTime,InputsAtCompileTime> JacobianType;
+
+	// members:
+	// could use friend of ObjectModeler to skip some of this
+	const Parameters& params;
+	const G2OStereoProjector<typename KeypointPointT, typename KeypointPointT>& projector_;
+	const Eigen::Affine3f& current_pose_;
+	const TSDFVolume *tsdf_volume_;
+	const FrameT& frame_;
+	const std::vector<int> *frame_cloud_indices_;
+	const std::vector<int> *frame_kp_indices_;
+	const KeypointsT& model_kp_;
+	const std::vector<int> *model_kp_indices_;
+	OpenCLOptimize *opencl_optimize_;
+
+	// set in initRender
+	bool initRenderCalled_;
+	Eigen::Vector2f render_proj_f_;
+	Eigen::Vector2f render_proj_c_;
+	cv::Rect render_rect_;
+	CloudICPTargetT::ConstPtr rendered_cloud_with_normals_;
+	const std::vector<int> *rendered_cloud_indices_;
+	cv::Mat rendered_image_for_dense_color_;
+
+	// set in initFrame
+	int initialized_octave_;
+
+	// created in constructor:
+	KeypointsT::CloudT::Ptr model_kp_cloud_transformed_;
+	// the number of channels for these 3 should match:
+	std::vector<cv::Mat> frame_image_for_dense_color_vec_;
+	std::vector<cv::Mat> frame_image_gradient_x_vec_;
+	std::vector<cv::Mat> frame_image_gradient_y_vec_;
+	std::vector<cv::Rect> frame_object_rect_vec_;
+	std::vector<cv::Mat> frame_object_mask_vec_;
+
+	// these will be 0 if negative, value if positive
+	float weight_icp_;
+	float weight_color_;
+	// set this once in constructor
+	float min_normal_dot_;
+
+
+	// updated each operator()
+	mutable float last_error_icp_;
+	mutable float last_error_icp_max_;
+	mutable float last_error_features_;
+	mutable float last_error_color_;
+	mutable float last_error_color_max_;
+	mutable float last_error_total_;
+	mutable int last_error_icp_count_;
+	mutable int last_error_color_count_;
+
+	// maintain timing stats
+	mutable RunningStatistics rs_f;
+	mutable RunningStatistics rs_df;
+
+	ICPCombinedFunctor(	const Parameters& params,
+						const G2OStereoProjector<KeypointPointT, KeypointPointT>& projector,
+						const TSDFVolume* tsdf_volume,
+						const Eigen::Affine3f& current_pose,
+						const FrameT& frame,
+						const std::vector<int> *frame_cloud_indices,
+						const std::vector<int> *frame_kp_indices,
+						const KeypointsT& model_kp,
+						const std::vector<int> *model_kp_indices,
+						OpenCLOptimize* opencl_optimize) :
+		params(params),
+		projector_(projector),
+		current_pose_(current_pose),
+		tsdf_volume_(tsdf_volume),
+		frame_(frame),
+		frame_cloud_indices_(frame_cloud_indices),
+		frame_kp_indices_(frame_kp_indices),
+		model_kp_(model_kp),
+		model_kp_cloud_transformed_(),
+		model_kp_indices_(model_kp_indices),
+		opencl_optimize_(opencl_optimize),
+		initialized_octave_(-1),
+		initRenderCalled_(false)
+	{
+		// Now that we use OpenCL, these checks shouldn't matter:
+		if (!params.use_opencl) throw new exception ("The non-opencl code has rotted!");
+#if 0
+		if (frame_kp_indices_->size() != model_kp_indices_->size()) throw new exception ("frame_kp_indices_.size() != model_kp_indices_.size()");
+		if (!frame.object_kp_projection_cloud_ptr) throw new exception ("!frame.object_kp_projection_cloud_ptr");
+		if (frame.object_kp_projection_cloud_ptr->size() != frame.object_kp.size()) throw new exception ("frame.object_kp_projection_cloud_ptr->size() != frame.object_kp.size()");
+#endif
+
+		// param adjustments:
+		weight_icp_ = params.combined_weight_icp_points > 0 ? params.combined_weight_icp_points : 0;
+		weight_color_ = params.combined_weight_color > 0 ? params.combined_weight_color : 0;
+		min_normal_dot_ = cos(params.icp_normals_angle * M_PI / 180.0);
+
+		last_error_icp_ = 0;
+		last_error_icp_max_ = 0;
+		last_error_features_ = 0;
+		last_error_color_ = 0;
+		last_error_color_max_ = 0;
+		last_error_total_ = 0;
+
+		// create model_kp_cloud_transformed_
+		model_kp_cloud_transformed_.reset(new KeypointCloudT);
+		pcl::transformPointCloud(*model_kp.keypoint_cloud, *model_kp_cloud_transformed_, current_pose_);
+
+		cv::Mat frame_image_full_size = extractImageChannels(frame_.image_color);
+		if (params.color_blur_size > 0 && !params.color_blur_after_pyramid) {
+			cv::GaussianBlur(frame_image_full_size, frame_image_full_size, cv::Size(params.color_blur_size, params.color_blur_size), 0);
+		}
+
+		frame_image_for_dense_color_vec_.push_back(frame_image_full_size);
+		frame_object_rect_vec_.push_back(frame_.object_rect);
+		frame_object_mask_vec_.push_back(frame.object_mask);
+
+		// construct pyramid
+		for (int i = 1; i < params.combined_octaves; i++) {
+			cv::Mat downsampled;
+			cv::pyrDown(frame_image_for_dense_color_vec_.back(), downsampled);
+
+			// scale this?
+			if (params.color_blur_size > 0 && params.color_blur_after_pyramid) {
+				cv::GaussianBlur(downsampled, downsampled, cv::Size(params.color_blur_size, params.color_blur_size), 0);
+			}
+
+			frame_image_for_dense_color_vec_.push_back(downsampled);
+
+			// also rect
+			frame_object_rect_vec_.push_back(scaleRectWithImage(frame_object_rect_vec_.back(), 0.5));
+			// and mask (for display only)
+			cv::Mat smaller_mask;
+			cv::resize(frame_object_mask_vec_.back(), smaller_mask, cv::Size(), 0.5, 0.5, cv::INTER_NEAREST);
+			frame_object_mask_vec_.push_back(smaller_mask);
+		}
+
+		// compute gradients for all!
+		for (int i = 0; i < frame_image_for_dense_color_vec_.size(); i++) {
+			frame_image_gradient_x_vec_.push_back(cv::Mat());
+			frame_image_gradient_y_vec_.push_back(cv::Mat());
+			cv::Sobel(frame_image_for_dense_color_vec_[i], frame_image_gradient_x_vec_.back(), -1, 1, 0, 3, 1.0/8.0);
+			cv::Sobel(frame_image_for_dense_color_vec_[i], frame_image_gradient_y_vec_.back(), -1, 0, 1, 3, 1.0/8.0);
+		}
+	}
+
+	cv::Mat extractImageChannels(cv::Mat image_rgb_8uc3)
+	{
+		cv::Mat image_float;
+		image_rgb_8uc3.convertTo(image_float, CV_32F, 1./255.);
+		cv::Mat image_float_ycrcb;
+		cv::cvtColor(image_float, image_float_ycrcb, CV_BGR2YCrCb);
+
+		if (params.combined_image_error == Parameters::IMAGE_ERROR_YCBCR) {
+			return image_float_ycrcb;
+		}
+		else if (params.combined_image_error == Parameters::IMAGE_ERROR_CBCR) {
+			cv::Mat result = cv::Mat(image_float_ycrcb.size(), CV_32FC2);
+			int from_to[] = {1,0, 2,1};
+			cv::mixChannels(&image_float_ycrcb, 1, &result, 1, from_to, 2);
+			return result;
+		}
+		else if (params.combined_image_error == Parameters::IMAGE_ERROR_Y) {
+			cv::Mat result = cv::Mat(image_float_ycrcb.size(), CV_32FC1);
+			int from_to[] = {0,0};
+			cv::mixChannels(&image_float_ycrcb, 1, &result, 1, from_to, 1);
+			return result;
+		}
+		else if (params.combined_image_error == Parameters::IMAGE_ERROR_GRADIENT_MAGNITUDE) {
+			// This doesn't deal correctly with the rendered image holes
+			cv::Mat image_float_y = cv::Mat(image_float_ycrcb.size(), CV_32FC1);
+			int from_to[] = {0,0};
+			cv::mixChannels(&image_float_ycrcb, 1, &image_float_y, 1, from_to, 1);
+
+			cv::Mat image_sobel_x;
+			cv::Mat image_sobel_y;
+			cv::Sobel(image_float_y, image_sobel_x, -1, 1, 0, 3, 1.0/8.0);
+			cv::Sobel(image_float_y, image_sobel_y, -1, 0, 1, 3, 1.0/8.0);
+
+			cv::Mat result;
+			cv::magnitude(image_sobel_x, image_sobel_y, result);
+			return result;
+		}
+		else {
+			throw new exception("Unknown image error");
+		}
+	}
+
+	inline int getImageChannelCount() const
+	{
+		if (params.combined_image_error == Parameters::IMAGE_ERROR_YCBCR) {
+			return 3;
+		}
+		else if (params.combined_image_error == Parameters::IMAGE_ERROR_CBCR) {
+			return 2;
+		}
+		else if (params.combined_image_error == Parameters::IMAGE_ERROR_Y) {
+			return 1;
+		}
+		else if (params.combined_image_error == Parameters::IMAGE_ERROR_GRADIENT_MAGNITUDE) {
+			return 1;
+		}
+		else {
+			throw new exception("Unknown image error");
+		}
+	}
+
+	void initRender(const Eigen::Vector2f &render_proj_f, const Eigen::Vector2f &render_proj_c, const cv::Rect& render_rect, const CloudICPTargetT::ConstPtr& rendered_cloud_with_normals, const std::vector<int> *rendered_cloud_indices)
+	{
+		render_proj_f_ = render_proj_f;
+		render_proj_c_ = render_proj_c;
+		render_rect_ = render_rect;
+		rendered_cloud_with_normals_ = rendered_cloud_with_normals;
+		rendered_cloud_indices_ = rendered_cloud_indices;
+		cv::Mat rendered_image_bgr = cloudToImage(*rendered_cloud_with_normals_);
+		rendered_image_for_dense_color_ = extractImageChannels(rendered_image_bgr);
+
+		if (frame_cloud_indices_->size() != rendered_cloud_indices_->size()) throw new exception ("frame_cloud_indices_.size() != rendered_cloud_indices_.size()");
+
+		if (params.use_opencl) {
+			//pcl::ScopeTime st("[TIMING] initOpenCLRender() within initRender");
+			initOpenCLRender();
+		}
+
+		initRenderCalled_ = true;
+	}
+
+	void initFrame(int octave)
+	{
+		if (octave < 0 || octave >= params.combined_octaves) throw new exception ("octave < 0 || octave >= params.combined_octaves");
+
+		if (params.use_opencl) {
+			initOpenCLFrame(octave);
+		}
+
+		initialized_octave_ = octave;
+	}
+
+	void initOpenCLFrame(int octave)
+	{
+		if (octave < 0 || octave >= params.combined_octaves) throw new exception ("octave < 0 || octave >= params.combined_octaves");
+
+		// prepare the frame points and normals
+		// Just do nearest neighbor for points (for now)
+		int rows_image = frame_image_for_dense_color_vec_[octave].rows;
+		int cols_image = frame_image_for_dense_color_vec_[octave].cols;
+
+		size_t frame_points_size = rows_image * cols_image;
+		std::vector<float> frame_points (frame_points_size * 4, std::numeric_limits<float>::quiet_NaN());
+		std::vector<float> frame_normals (frame_points_size * 4, std::numeric_limits<float>::quiet_NaN());
+		int scale = 1 << octave;
+
+		cv::Rect object_rect_scaled;
+		object_rect_scaled.x = frame_.object_rect.x / scale;
+		object_rect_scaled.y = frame_.object_rect.y / scale;
+		object_rect_scaled.width = frame_.object_rect.width / scale;
+		object_rect_scaled.height = frame_.object_rect.height / scale;
+
+		// only setting points in object_rect
+		for (int row_object = 0; row_object * scale < frame_.object_cloud_ptr->height; ++row_object) {
+			for (int col_object = 0; col_object * scale < frame_.object_cloud_ptr->width; ++col_object) {
+				const PointT& p = frame_.object_cloud_ptr->at(col_object * scale, row_object * scale);
+				const pcl::Normal& n = frame_.object_normal_cloud_ptr->at(col_object * scale, row_object * scale);
+				int row_image = row_object + object_rect_scaled.y;
+				int col_image = col_object + object_rect_scaled.x;
+				int image_vector_index = (row_image * cols_image + col_image) * 4;
+				frame_points[image_vector_index] = p.x;
+				frame_points[image_vector_index+1] = p.y;
+				frame_points[image_vector_index+2] = p.z;
+				frame_points[image_vector_index+3] = 1;
+				frame_normals[image_vector_index] = n.normal_x;
+				frame_normals[image_vector_index+1] = n.normal_y;
+				frame_normals[image_vector_index+2] = n.normal_z;
+				frame_normals[image_vector_index+3] = 0;
+			}
+		}
+
+		Eigen::Vector2f f_scaled = projector_.getFocalLengths() / scale;
+		Eigen::Vector2f c_scaled = projector_.getCenters() / scale;
+
+		// hack for weighting ICP depending on octave?  Not used for anything...
+		float weight_icp_for_octave = weight_icp_;
+		float weight_color_for_octave = weight_color_;
+
+		// weights based on frame image
+		cv::Mat frame_weights_trivial(frame_image_for_dense_color_vec_[octave].size(), CV_32FC1, cv::Scalar::all(1.0));
+
+		opencl_optimize_->prepareFrameBuffers(
+			params.icp_max_distance, min_normal_dot_,
+			weight_icp_for_octave, weight_color_for_octave, 
+			f_scaled[0], f_scaled[1], c_scaled[0], c_scaled[1],
+			object_rect_scaled.x, object_rect_scaled.y, object_rect_scaled.width, object_rect_scaled.height,
+			cols_image, rows_image, getImageChannelCount(), 
+			frame_points.data(), frame_normals.data(), (float*) frame_image_for_dense_color_vec_[octave].data, (float*) frame_weights_trivial.data, (float*) frame_image_gradient_x_vec_[octave].data, (float*) frame_image_gradient_y_vec_[octave].data);
+	}
+
+	void initOpenCLRender()
+	{
+		// prepare the rendered points
+		int rendered_points_size = rendered_cloud_with_normals_->width * rendered_cloud_with_normals_->height;
+		std::vector<float> rendered_points (rendered_points_size * 4, std::numeric_limits<float>::quiet_NaN());
+		std::vector<float> rendered_normals (rendered_points_size * 4, std::numeric_limits<float>::quiet_NaN());
+		for (int row = 0; row < rendered_cloud_with_normals_->height; row++) {
+			for (int col = 0; col < rendered_cloud_with_normals_->width; col++) {
+				const PointICPTargetT& p = rendered_cloud_with_normals_->at(col, row);
+				int rendered_vector_index = row * rendered_cloud_with_normals_->width + col;
+				rendered_points[4*rendered_vector_index] = p.x;
+				rendered_points[4*rendered_vector_index+1] = p.y;
+				rendered_points[4*rendered_vector_index+2] = p.z;
+				rendered_points[4*rendered_vector_index+3] = 1;
+				rendered_normals[4*rendered_vector_index] = p.normal_x;
+				rendered_normals[4*rendered_vector_index+1] = p.normal_y;
+				rendered_normals[4*rendered_vector_index+2] = p.normal_z;
+				rendered_normals[4*rendered_vector_index+3] = 0;
+			}
+		}
+
+		// weights based on rendered image
+		cv::Mat rendered_weights_trivial(rendered_image_for_dense_color_.size(), CV_32FC1, cv::Scalar::all(1.0));
+
+		opencl_optimize_->prepareRenderedAndErrorBuffers(
+			render_proj_f_[0], render_proj_f_[1], render_proj_c_[0], render_proj_c_[1],
+			render_rect_.x, render_rect_.y, render_rect_.width, render_rect_.height,
+			rendered_points.data(), rendered_normals.data(), (float*) rendered_image_for_dense_color_.data, (float*) rendered_weights_trivial.data);
+	}
+
+	Eigen::Matrix4f xToMatrix4f(const InputType& x) const {
+		Eigen::VectorXf params = x.cast<float> ();
+		pcl::WarpPointRigid6D<PointT, PointT> warp_point;
+		warp_point.setParam (params);
+		return warp_point.getTransform();
+	}
+
+	Eigen::Affine3f xToAffine3f(const InputType& x) const {
+		return Eigen::Affine3f(xToMatrix4f(x));
+	}
+
+	int inline valuesICP() const {return frame_cloud_indices_->size();}
+	int inline valuesFeatures() const {return frame_kp_indices_->size();}
+	int inline valuesColor() const {return rendered_cloud_with_normals_->size();}
+	int inline valuesICPAndColor() const {
+		return (rendered_cloud_with_normals_->size() * (1 + getImageChannelCount()));
+	}
+	int inline values() const {
+		int result = 0;
+		if (params.combined_weight_features > 0) result += valuesFeatures();
+		if (params.combined_icp_and_color) {
+			result += valuesICPAndColor();
+		}
+		else {
+			if (params.combined_weight_icp_points > 0) result += valuesICP();
+			if (params.combined_weight_color > 0) result += valuesColor();
+		}
+
+		return result;
+	}
+
+	// deprecated:
+	inline float getImageIntensity(const cv::Mat& image, const Eigen::Vector2f &p_proj) const {
+		// a silly way to do interpolation into frame image
+		cv::Mat subPixelMat;
+		cv::getRectSubPix(image, cv::Size(1,1), cv::Point2f(p_proj[0], p_proj[1]), subPixelMat);
+		return subPixelMat.at<float>(0,0);
+	}
+
+	// deprecated
+	template <typename PointT>
+	inline float getModelIntensity(const PointT &p) const {
+		// eigen fun for norm (not sure how opencv deals with negative bytes in norm...probably fine?)
+		static const Eigen::Vector3f to_intensity(0.299,0.587,0.114);
+		Eigen::Vector3i model_color = p.getRGBVector3i();
+		return (model_color.cast<float>() / 255).dot(to_intensity);
+	}
+
+	// partial_fvec / partial_jmat not actually const.
+	// see: http://eigen.tuxfamily.org/dox/TopicFunctionTakingEigenTypes.html
+	template <typename Derived>
+	float errorICP (const InputType &x, Eigen::MatrixBase<Derived> const &partial_fvec) const {
+		Eigen::Affine3f x_transform = xToAffine3f(x);
+		Eigen::Affine3f x_transform_inverse = x_transform.inverse();
+		Eigen::Matrix3f x_transform_rotation = x_transform.rotation();
+
+		float total_icp_error_squared = 0;
+		int icp_error_count = valuesICP();
+		if (partial_fvec.size() != icp_error_count) throw new exception("partial_fvec.size() != icp_error_count");
+#ifdef USE_OPENMP_FOR_FUNCTOR
+#pragma omp parallel for
+#endif
+		for (int i = 0; i < icp_error_count; i++) {
+			const FrameT::PointT& p_frame = frame_.object_cloud_ptr->points[frame_cloud_indices_->at(i)];
+			const PointICPTargetT& p_model = rendered_cloud_with_normals_->points[rendered_cloud_indices_->at(i)];
+				
+			float this_error = 0;
+#if 0
+			// This moves the frame point by x_transform_inverse (avoids transforming normal):
+			Eigen::Vector3f p_frame_transformed = x_transform_inverse * p_frame.getVector3fMap();
+			this_error = params.combined_weight_icp_points * (p_frame_transformed - p_model.getVector3fMap()).dot(p_model.getNormalVector3fMap());
+#else
+			// This moves the model point by x_transform (requires transforming the normal, but goes with df():
+			// Although I guess it really shouldn't matter since they're the same error!!!	
+			Eigen::Vector3f p_model_transformed = x_transform * p_model.getVector3fMap();
+			Eigen::Vector3f n_model_transformed = x_transform_rotation * p_model.getNormalVector3fMap();
+			this_error = params.combined_weight_icp_points * (p_frame.getVector3fMap() - p_model_transformed).dot(n_model_transformed);
+#endif
+			const_cast<Eigen::MatrixBase<Derived>&>(partial_fvec)[i] = this_error;
+			total_icp_error_squared += this_error * this_error;
+		}
+		return sqrt(total_icp_error_squared);
+	}
+
+	// partial_fvec / partial_jmat not actually const.
+	// see: http://eigen.tuxfamily.org/dox/TopicFunctionTakingEigenTypes.html
+	template <typename Derived>
+	void dfICP(const InputType &x, Eigen::MatrixBase<Derived> const &partial_jmat) const {
+		Eigen::Affine3f x_transform = xToAffine3f(x);
+		//Eigen::Affine3f x_transform_inverse = x_transform.inverse();
+		Eigen::Matrix3f x_transform_rotation = x_transform.rotation();
+
+		int icp_error_count = valuesICP();
+#ifdef USE_OPENMP_FOR_FUNCTOR
+#pragma omp parallel for
+#endif
+		for (int i = 0; i < icp_error_count; i++) {
+			const FrameT::PointT& p_frame = frame_.object_cloud_ptr->points[frame_cloud_indices_->at(i)];
+			const PointICPTargetT& p_model = rendered_cloud_with_normals_->points[rendered_cloud_indices_->at(i)];
+
+			// have p_frame.getVector3fMap() whenever you want
+			Eigen::Vector3f p_3d = x_transform * p_model.getVector3fMap(); // aka p_model_transformed
+			Eigen::Vector3f n_3d = x_transform_rotation * p_model.getNormalVector3fMap(); // aka n_model_transformed
+
+			////////// dup
+			// jacobian of 3d position with respect to params
+			// first three are x,y,z
+			Eigen::MatrixXf j_3d_x = Eigen::MatrixXf::Zero(3,6);
+			j_3d_x.block(0,0,3,3) = Eigen::Matrix3f::Identity();
+			// next 3 are quaternion x,y,z (w inferred)
+			Eigen::Matrix3f j_quat = Eigen::Matrix3f::Zero(3,3);
+			j_quat(0,1) = p_3d.z();
+			j_quat(1,0) = -p_3d.z();
+			j_quat(0,2) = -p_3d.y();
+			j_quat(2,0) = p_3d.y();
+			j_quat(1,2) = p_3d.x();
+			j_quat(2,1) = -p_3d.x();
+			j_quat *= 2; // 2*skew symmetric
+			j_3d_x.block(0,3,3,3) = j_quat;
+			///////////// end dup
+
+			// jacobian of 3d rotation with respect to params
+			Eigen::MatrixXf j_rot_x = Eigen::MatrixXf::Zero(3,6);
+			j_rot_x.block(0,3,3,3) = j_quat;
+
+			// Try to do d[ (p_s - T(p_t)).dot(T(n_t)) ]
+			// I think I want: -d[T(p_t)] * T(n_t) + (p_s - T(p_t))*d[T(n_t)]
+			// Whatever that means....
+			Eigen::MatrixXf jacobian_row_unweighted = - ( n_3d.transpose() * j_3d_x ) + ( (p_frame.getVector3fMap() - p_3d).transpose() * j_rot_x );
+			Eigen::MatrixXf jacobian_row = params.combined_weight_icp_points * jacobian_row_unweighted;
+
+			// debug
+			//cout << "------------------" << endl << "ICP jacobian_row:" << endl << jacobian_row << endl << endl;
+
+			const_cast<Eigen::MatrixBase<Derived>&>(partial_jmat).row(i) = jacobian_row.row(0).cast<typename Derived::Scalar>();
+		}
+	}
+
+	// partial_fvec / partial_jmat not actually const.
+	// see: http://eigen.tuxfamily.org/dox/TopicFunctionTakingEigenTypes.html
+	template <typename Derived>
+	float errorFeatures (const InputType &x, Eigen::MatrixBase<Derived> const &partial_fvec) const {
+		Eigen::Affine3f x_transform = xToAffine3f(x);
+		float total_feature_error_squared = 0;
+		size_t feature_error_count = valuesFeatures();
+		if (partial_fvec.size() != feature_error_count) throw new exception("partial_fvec.size() != feature_error_count");
+		for (size_t i = 0; i < feature_error_count; i++) {
+			const KeypointsT::PointT& kp_p_model = model_kp_cloud_transformed_->points[model_kp_indices_->at(i)];
+			Eigen::Vector3f kp_p_model_transformed = x_transform * kp_p_model.getVector3fMap();
+			const KeypointsT::PointT& kp_proj_frame = frame_.object_kp_projection_cloud_ptr->points[frame_kp_indices_->at(i)];
+			float this_error = params.combined_weight_features * sqrt(projector_.getSquaredProjectionError(kp_p_model_transformed, kp_proj_frame));
+			const_cast<Eigen::MatrixBase<Derived>&>(partial_fvec)[i] = this_error;
+			total_feature_error_squared += this_error * this_error;
+		}
+		return sqrt(total_feature_error_squared);
+	}
+
+	// partial_fvec / partial_jmat not actually const.
+	// see: http://eigen.tuxfamily.org/dox/TopicFunctionTakingEigenTypes.html
+	template <typename Derived>
+	float errorColor (const InputType &x, Eigen::MatrixBase<Derived> const &partial_fvec) const {
+		Eigen::Affine3f x_transform = xToAffine3f(x);
+		float total_color_error_squared = 0;
+		size_t color_error_count = valuesColor();
+		if (partial_fvec.size() != color_error_count) throw new exception("partial_fvec.size() != color_error_count");
+		////////////////////
+		// debug:
+		// always initialize
+		//cv::Mat projected_intensities(frame_image_for_dense_color_.size(), CV_32FC1, cv::Scalar::all(0));
+		//cv::Mat frame_sampled_intensities(frame_image_for_dense_color_.size(), CV_32FC1, cv::Scalar::all(0));
+		cv::Mat error_image(frame_image_for_dense_color_vec_[0].size(), CV_32FC1, cv::Scalar::all(0.5));
+		
+		// For every rendered_cloud_with_normals_ point add to error:
+#ifdef USE_OPENMP_FOR_FUNCTOR
+#pragma omp parallel for
+#endif
+		for (int i = 0; i < color_error_count; i++) {
+			const PointICPTargetT& p_model = rendered_cloud_with_normals_->points[i];
+			if (pcl_isnan(p_model.z)) continue;
+			// transform point according to params
+			Eigen::Vector3f p_model_transformed = x_transform * p_model.getVector3fMap();
+			// project to pixel space
+			Eigen::Vector2f p_proj;
+			projector_.projectPointImage(p_model_transformed, p_proj);
+			if (p_proj[0] < 0 || p_proj[0] >= frame_image_for_dense_color_vec_[0].cols ||
+				p_proj[1] < 0 || p_proj[1] >= frame_image_for_dense_color_vec_[0].rows) continue;
+
+			float frame_intensity = getImageIntensity(frame_image_for_dense_color_vec_[0], p_proj);
+			float model_intensity = getModelIntensity(p_model);
+			float this_error_unweighted = (frame_intensity - model_intensity);
+
+			// actually put in error vector:
+			float this_error = params.combined_weight_color * this_error_unweighted;
+			const_cast<Eigen::MatrixBase<Derived>&>(partial_fvec)[i] = this_error;
+			total_color_error_squared += this_error * this_error;
+
+			//////////////////////////////////////
+			// this is for debug viewing:
+			if (params.combined_debug_images) {
+				//projected_intensities.at<float>(p_proj[1], p_proj[0]) = model_intensity;
+				//frame_sampled_intensities.at<float>(p_proj[1], p_proj[0]) = frame_intensity;
+				error_image.at<float>(p_proj[1], p_proj[0]) += this_error_unweighted;
+			}
+		}
+
+		//////////////////////////////
+		// The debug viewing:
+		if (params.combined_debug_images) {
+			cv::namedWindow("error_image");
+			cv::imshow("error_image", error_image);
+			if (params.combined_pause_every_eval) cv::waitKey();
+			else cv::waitKey(1);
+		}
+
+		return sqrt(total_color_error_squared);
+	}
+
+	// partial_fvec / partial_jmat not actually const.
+	// see: http://eigen.tuxfamily.org/dox/TopicFunctionTakingEigenTypes.html
+	template <typename Derived>
+	void dfColor(const InputType &x, Eigen::MatrixBase<Derived> const &partial_jmat) const {
+		Eigen::Affine3f x_transform = xToAffine3f(x);
+		//Eigen::Affine3f x_transform_inverse = x_transform.inverse();
+		//Eigen::Matrix3f x_transform_rotation = x_transform.rotation();
+
+		// For every rendered_cloud_with_normals_ point add to error:
+		const Eigen::Vector2f& f = projector_.getFocalLengths();
+		const Eigen::Vector2f& c = projector_.getCenters();
+
+		int color_error_count = valuesColor();
+#ifdef USE_OPENMP_FOR_FUNCTOR
+#pragma omp parallel for
+#endif
+		for (int i = 0; i < color_error_count; i++) {
+			const PointICPTargetT& p_model = rendered_cloud_with_normals_->points[i];
+			if (pcl_isnan(p_model.z)) continue;
+			// transform point according to params
+			Eigen::Vector3f p_3d = x_transform * p_model.getVector3fMap();
+			// project to pixel space
+			Eigen::Vector2f p_proj;
+			projector_.projectPointImage(p_3d, p_proj);
+			if (p_proj[0] < 0 || p_proj[0] >= frame_image_for_dense_color_vec_[0].cols ||
+				p_proj[1] < 0 || p_proj[1] >= frame_image_for_dense_color_vec_[0].rows) continue;
+
+			// jacobian of 3d position with respect to params
+			// first three are x,y,z
+			Eigen::MatrixXf j_3d_x = Eigen::MatrixXf::Zero(3,6);
+			j_3d_x.block(0,0,3,3) = Eigen::Matrix3f::Identity();
+			// next 3 are quaternion x,y,z (w inferred)
+			Eigen::Matrix3f j_quat = Eigen::Matrix3f::Zero(3,3);
+			j_quat(0,1) = p_3d.z();
+			j_quat(1,0) = -p_3d.z();
+			j_quat(0,2) = -p_3d.y();
+			j_quat(2,0) = p_3d.y();
+			j_quat(1,2) = p_3d.x();
+			j_quat(2,1) = -p_3d.x();
+			j_quat *= 2; // 2*skew symmetric
+			j_3d_x.block(0,3,3,3) = j_quat;
+
+			// jacobian of projection with respect to 3d point
+			Eigen::MatrixXf j_proj_3d = Eigen::MatrixXf::Zero(2,3);
+			j_proj_3d(0,0) = f(0) / p_3d.z();
+			j_proj_3d(1,1) = f(1) / p_3d.z();
+			j_proj_3d(0,2) = - p_3d.x() * f(0) / (p_3d.z() * p_3d.z());
+			j_proj_3d(1,2) = - p_3d.y() * f(1) / (p_3d.z() * p_3d.z());
+
+			// jacobian of error relative to pixel coordinates
+			Eigen::MatrixXf j_error_proj = Eigen::MatrixXf::Zero(1,2);
+			float frame_gradient_x = getImageIntensity(frame_image_gradient_x_vec_[0], p_proj);
+			float frame_gradient_y = getImageIntensity(frame_image_gradient_y_vec_[0], p_proj);
+			j_error_proj(0,0) = frame_gradient_x;
+			j_error_proj(0,1) = frame_gradient_y;
+
+			// actually add to jacobian 
+			Eigen::MatrixXf jacobian_row = params.combined_weight_color * j_error_proj * j_proj_3d * j_3d_x;
+			const_cast<Eigen::MatrixBase<Derived>&>(partial_jmat).row(i) = jacobian_row.row(0).cast<typename Derived::Scalar>();
+
+			// debug:
+			//			cout << "j_error_proj: \n" << j_error_proj  << endl;
+			//			cout << "j_proj_3d: \n" << j_proj_3d  << endl;
+			//			cout << "j_3d_x: \n" << j_3d_x  << endl;
+			//			cout << "jacobian_row: \n" << jacobian_row << endl;
+		}
+	}
+
+	inline bool associateForICPAndColor(const Eigen::Affine3f& x_transform, const Eigen::Matrix3f& x_transform_rotation, const PointICPTargetT& p,
+		Eigen::Vector3f &p_transformed, Eigen::Vector3f &p_normal_transformed, Eigen::Vector2f &p_proj, Eigen::Vector3f &p_frame) const
+	{
+		// check the point and normal
+		if (pcl_isnan(p.z) || pcl_isnan(p.normal_z)) return false;
+		// set everything we can currently set
+		p_transformed = x_transform * p.getVector3fMap();
+		p_normal_transformed = x_transform_rotation * p.getNormalVector3fMap();
+		projector_.projectPointImage(p_transformed, p_proj);
+		int frame_col = (int) (p_proj[0] + 0.5);
+		int frame_row = (int) (p_proj[1] + 0.5);
+		// only keep points that project into object_rect
+		if (frame_col < frame_.object_rect.x || frame_col >= frame_.object_rect.x + frame_.object_rect.width ||
+			frame_row < frame_.object_rect.y || frame_row >= frame_.object_rect.y + frame_.object_rect.height) return false;
+		// only keep points that have a corresponding valid object_cloud point
+		int object_col = frame_col - frame_.object_rect.x;
+		int object_row = frame_row - frame_.object_rect.y;
+		const PointT& p_frame_pcl = frame_.object_cloud_ptr->at(object_col, object_row);
+		p_frame = p_frame_pcl.getVector3fMap();
+		// this performs object masking: (could also use image mask)
+		if (pcl_isnan(p_frame_pcl.z)) return false;
+		return true;
+	}
+
+	inline bool filterForICP(const Eigen::Vector3f &p_transformed, const Eigen::Vector3f &p_normal_transformed, const Eigen::Vector2f &p_proj, const Eigen::Vector3f &p_frame,
+		const float &max_distance, const float &min_normal_dot) const
+	{
+		Eigen::Vector3f icp_vector = p_frame - p_transformed;
+		if (icp_vector.norm() > max_distance) return false;
+
+		// need to recompute:
+		int frame_col = (int) (p_proj[0] + 0.5);
+		int frame_row = (int) (p_proj[1] + 0.5);
+		int object_col = frame_col - frame_.object_rect.x;
+		int object_row = frame_row - frame_.object_rect.y;
+
+		const pcl::Normal& n_frame = frame_.object_normal_cloud_ptr->at(object_col, object_row);
+		if (pcl_isnan(n_frame.normal_z)) return false; // assuming you checked p_normal_transformed already
+		float dot = n_frame.getNormalVector3fMap().dot(p_normal_transformed);
+		if (dot < min_normal_dot) return false;
+
+		return true;
+	}
+
+	template <typename Derived>
+	void errorICPAndColorOpenCL (const InputType &x, Eigen::MatrixBase<Derived> const &partial_fvec) const
+	{
+		if (!initRenderCalled_) throw new exception ("!initRenderCalled_");
+		if (initialized_octave_ < 0) throw new exception ("initialized_octave_ < 0");
+
+		Eigen::Affine3f x_transform = xToAffine3f(x);
+		std::vector<float> error_vector(opencl_optimize_->getErrorVectorSize(), 0); // todo: don't init
+		opencl_optimize_->errorICPAndColor(x_transform, error_vector.data());
+		// todo: this a better way
+		for (size_t i = 0; i < values(); i++) {
+			const_cast<Eigen::MatrixBase<Derived>&>(partial_fvec)[i] = error_vector[i];
+		}
+
+		// grab various statistics about the error
+		// this is a slow way to do this:
+		int error_channels = getImageChannelCount() + 1;
+		{
+			//pcl::ScopeTime st("[TIMING] Error statistics in functor");
+			float total_squared_icp_error = 0;
+			float total_squared_color_error = 0;
+			float max_squared_icp_error = 0;
+			float max_squared_color_error = 0;
+			int nonzero_icp_count = 0;
+			int nonzero_color_count = 0;
+			for (size_t i = 0; i < values() / error_channels; i++) {
+				float this_icp_error = error_vector[error_channels*i];
+				if (this_icp_error != 0) nonzero_icp_count++;
+				float this_icp_error_squared = this_icp_error * this_icp_error;
+				total_squared_icp_error += this_icp_error_squared;
+				max_squared_icp_error = max(max_squared_icp_error, this_icp_error_squared);
+				for (int c = 0; c < getImageChannelCount(); ++c) {
+					float this_color_error = error_vector[error_channels*i + 1 + c];
+					if (this_color_error != 0) nonzero_color_count++;
+					float this_color_error_squared = this_color_error * this_color_error;
+					total_squared_color_error += this_color_error_squared;
+					max_squared_color_error = max(max_squared_color_error, this_color_error_squared);
+				}
+			}
+			last_error_icp_ = sqrt(total_squared_icp_error);
+			last_error_color_ = sqrt(total_squared_color_error);
+			last_error_icp_max_ = sqrt(max_squared_icp_error);
+			last_error_color_max_ = sqrt(max_squared_color_error);
+			last_error_icp_count_ = nonzero_icp_count;
+			last_error_color_count_ = nonzero_color_count;
+		}
+
+		// debug (will be slow)
+		if (params.combined_debug_images) {
+			cv::Mat icp_error_image(rendered_cloud_with_normals_->height, rendered_cloud_with_normals_->width, CV_32FC1, cv::Scalar::all(0.5));
+			// make general:
+			std::vector<cv::Mat> image_error_vec;
+			for (int i = 0; i < getImageChannelCount(); i++) {
+				image_error_vec.push_back(cv::Mat(rendered_cloud_with_normals_->height, rendered_cloud_with_normals_->width, CV_32FC1, cv::Scalar::all(0.5)));
+			}
+			
+			cv::Mat rendered_reference_image(rendered_cloud_with_normals_->height, rendered_cloud_with_normals_->width, CV_8UC3, cv::Scalar::all(0));
+			for (int row = 0; row < icp_error_image.rows; row++) {
+				for (int col = 0; col < icp_error_image.cols; col++) {
+					int error_vector_index_icp = error_channels * (row * icp_error_image.cols + col);
+					icp_error_image.at<float>(row, col) += error_vector[error_vector_index_icp];
+					for (int i = 0; i < getImageChannelCount(); i++) {
+						int error_vector_index_image = error_channels * (row * icp_error_image.cols + col) + 1 + i;
+						image_error_vec[i].at<float>(row, col) += error_vector[error_vector_index_image];
+					}
+
+					// also fill in ref image
+					const PointICPTargetT& p = rendered_cloud_with_normals_->at(col, row);
+					cv::Vec3b& ref_pixel = rendered_reference_image.at<cv::Vec3b>(row, col);
+					ref_pixel[0] = p.b;
+					ref_pixel[1] = p.g;
+					ref_pixel[2] = p.r;
+				}
+			}
+
+		
+			cv::Mat frame_image_roi = frame_image_for_dense_color_vec_[initialized_octave_](frame_object_rect_vec_[initialized_octave_]);
+			
+			std::vector<cv::Mat> frame_image_channels;
+			cv::split(frame_image_roi, frame_image_channels);
+
+			std::vector<cv::Mat> frame_object_image_vec;
+			for (int i = 0; i < getImageChannelCount(); i++) {
+				frame_object_image_vec.push_back(cv::Mat());
+				frame_image_channels[i].copyTo(frame_object_image_vec.back(), frame_object_mask_vec_[initialized_octave_](frame_object_rect_vec_[initialized_octave_]));
+			}
+
+			std::vector<cv::Mat> v_images;
+			v_images.push_back(floatC1toCharC3(icp_error_image));
+			for (int i = 0; i < getImageChannelCount(); i++) {
+				v_images.push_back(floatC1toCharC3(image_error_vec[i]));
+			}
+			v_images.push_back(rendered_reference_image);
+			for (int i = 0; i < getImageChannelCount(); i++) {
+				// scale frame images to match render resolution here
+				cv::Mat source_image = frame_object_image_vec[i];
+				cv::Mat image_to_show = source_image;
+				cv::Size desired_size = v_images[0].size();
+				if (source_image.size() != desired_size) {
+					cv::resize(source_image, image_to_show, desired_size, 0, 0, cv::INTER_NEAREST);
+				}
+				v_images.push_back(floatC1toCharC3(image_to_show));
+			}
+			cv::Mat combined_error_images = createMxN(2, 1 + getImageChannelCount(), v_images);
+			//showInWindow("Combined Error Images", combined_error_images);
+			int scale = 1 << initialized_octave_;
+			cv::Mat combined_error_images_larger;
+			cv::resize(combined_error_images, combined_error_images_larger, cv::Size(), scale, scale, cv::INTER_NEAREST); 
+			showInWindow("Combined Error Images (enlarged)", combined_error_images_larger);
+
+			if (params.combined_pause_every_eval) cv::waitKey();
+			else cv::waitKey(1);
+		}
+	}
+
+	template <typename Derived>
+	void dfICPAndColorOpenCL(const InputType &x, Eigen::MatrixBase<Derived> const &partial_jmat) const 
+	{
+		Eigen::Affine3f x_transform = xToAffine3f(x);
+		std::vector<float> error_matrix(opencl_optimize_->getErrorMatrixSize(), 0); // todo: don't init
+		opencl_optimize_->dfICPAndColor(x_transform, error_matrix.data());
+		// assign to partial_jmat
+		//throw new std::exception("dfICPAndColorOpenCL");
+		for (int row = 0; row < values(); row++) {
+			for (int col = 0; col < 6; col++) {
+				const_cast<Eigen::MatrixBase<Derived>&>(partial_jmat)(row, col) = error_matrix[row * 6 + col];
+			}
+		}
+	}
+
+
+	// partial_fvec / partial_jmat not actually const.
+	// see: http://eigen.tuxfamily.org/dox/TopicFunctionTakingEigenTypes.html
+	// Instead of returning a float, this sets the mutables last_*
+	template <typename Derived>
+	void errorICPAndColor (const InputType &x, Eigen::MatrixBase<Derived> const &partial_fvec) const
+	{
+		Eigen::Affine3f x_transform = xToAffine3f(x);
+		Eigen::Matrix3f x_transform_rotation = x_transform.rotation();
+
+		////////////////////
+		// debug:
+		// Always initialize and hope it's fast
+		//cv::Mat projected_intensities(frame_image_for_dense_color_.size(), CV_32FC1, cv::Scalar::all(0));
+		//cv::Mat frame_sampled_intensities(frame_image_for_dense_color_.size(), CV_32FC1, cv::Scalar::all(0));
+		cv::Mat error_image(frame_image_for_dense_color_vec_[0].size(), CV_32FC1, cv::Scalar::all(0.5));
+		cv::Mat icp_inliers_image(frame_image_for_dense_color_vec_[0].size(), CV_8UC1, cv::Scalar::all(128));
+		
+		float total_error_squared_icp = 0;
+		float total_error_squared_color = 0;
+
+		int loop_count = rendered_cloud_with_normals_->size();
+#ifdef USE_OPENMP_FOR_FUNCTOR
+#pragma omp parallel for reduction(+: total_error_squared_icp) reduction(+: total_error_squared_color)
+#endif
+		for (int i = 0; i < loop_count; i++) {
+			// index into 2*i, 2*i + 1
+			const PointICPTargetT& p = rendered_cloud_with_normals_->points[i];
+			// to be filled in:
+			Eigen::Vector3f p_transformed;
+			Eigen::Vector3f p_normal_transformed; 
+			Eigen::Vector2f p_proj;
+			Eigen::Vector3f p_frame;
+			if (!associateForICPAndColor(x_transform, x_transform_rotation, p,
+				p_transformed, p_normal_transformed, p_proj, p_frame)) continue;
+
+			/////////////////////////////
+			// ICP error only if passes additional filter:
+			// Note that we assume 0 is already sitting in the result
+			uchar debug_image_value_icp_inliers = 0;
+			if (filterForICP(p_transformed, p_normal_transformed, p_proj, p_frame, params.icp_max_distance, min_normal_dot_)) {
+				float this_error_icp = 0;
+				this_error_icp = weight_icp_ * (p_frame - p_transformed).dot(p_normal_transformed);
+				const_cast<Eigen::MatrixBase<Derived>&>(partial_fvec)[2*i] = this_error_icp;
+				total_error_squared_icp += this_error_icp * this_error_icp;
+
+				/////////////////////////////
+				// debug
+				debug_image_value_icp_inliers = 255;
+			}
+			if (params.combined_debug_images) {
+				icp_inliers_image.at<uchar>(p_proj[1], p_proj[0]) = debug_image_value_icp_inliers;
+			}
+
+
+			///////////////////////////////
+			// Get color for color error
+			float frame_intensity = getImageIntensity(frame_image_for_dense_color_vec_[0], p_proj);
+			float model_intensity = getModelIntensity(p);
+			float this_error_unweighted = (frame_intensity - model_intensity);
+
+			float this_error_color = weight_color_ * this_error_unweighted;
+			const_cast<Eigen::MatrixBase<Derived>&>(partial_fvec)[2*i+1] = this_error_color;
+			total_error_squared_color += this_error_color * this_error_color;
+
+			//////////////////////////////////////
+			// this is for debug viewing:
+			if (params.combined_debug_images) {
+				//projected_intensities.at<float>(p_proj[1], p_proj[0]) = model_intensity;
+				//frame_sampled_intensities.at<float>(p_proj[1], p_proj[0]) = frame_intensity;
+				error_image.at<float>(p_proj[1], p_proj[0]) += this_error_unweighted;
+			}
+		} // big for loop
+
+		//////////////////////////////
+		// The debug viewing:
+		if (params.combined_debug_images) {
+			cv::namedWindow("error_image");
+			cv::imshow("error_image", error_image);
+			cv::namedWindow("icp_inliers_image");
+			cv::imshow("icp_inliers_image", icp_inliers_image);
+			if (params.combined_pause_every_eval) cv::waitKey();
+			else cv::waitKey(1);
+		}
+
+		last_error_icp_ = sqrt(total_error_squared_icp);
+		last_error_color_ = sqrt(total_error_squared_color);
+	}
+
+	// partial_fvec / partial_jmat not actually const.
+	// see: http://eigen.tuxfamily.org/dox/TopicFunctionTakingEigenTypes.html
+	template <typename Derived>
+	void dfICPAndColor(const InputType &x, Eigen::MatrixBase<Derived> const &partial_jmat) const {
+		Eigen::Affine3f x_transform = xToAffine3f(x);
+		Eigen::Matrix3f x_transform_rotation = x_transform.rotation();
+		const Eigen::Vector2f& f = projector_.getFocalLengths();
+		const Eigen::Vector2f& c = projector_.getCenters();
+
+		int loop_count = rendered_cloud_with_normals_->size();
+#ifdef USE_OPENMP_FOR_FUNCTOR
+//#pragma omp parallel for firstprivate(j_3d_x) firstprivate(j_rot_x) firstprivate(j_proj_3d) firstprivate(j_error_proj)
+#pragma omp parallel for
+#endif
+		for (int i = 0; i < loop_count; i++) {
+			// index into 2*i, 2*i + 1
+			const PointICPTargetT& p = rendered_cloud_with_normals_->points[i];
+			// to be filled in:
+			Eigen::Vector3f p_transformed;
+			Eigen::Vector3f p_normal_transformed; 
+			Eigen::Vector2f p_proj;
+			Eigen::Vector3f p_frame;
+			if (!associateForICPAndColor(x_transform, x_transform_rotation, p,
+				p_transformed, p_normal_transformed, p_proj, p_frame)) continue;
+
+			// avoid renaming later:
+			const Eigen::Vector3f& p_3d = p_transformed;
+			const Eigen::Vector3f& n_3d = p_normal_transformed;
+
+			/////////////////////////////////////////
+			// Shared for ICP and color:
+			// jacobian of 3d position with respect to params
+			///////////////// This works:
+			// first three are x,y,z
+			Eigen::MatrixXf j_3d_x = Eigen::MatrixXf::Zero(3,6);
+			j_3d_x.block(0,0,3,3) = Eigen::Matrix3f::Identity();
+			// next 3 are quaternion x,y,z (w inferred)
+			Eigen::Matrix3f j_quat = Eigen::Matrix3f::Zero(3,3);
+			float x_2 = 2 * p_3d.x();
+			float y_2 = 2 * p_3d.y();
+			float z_2 = 2 * p_3d.z();
+			j_quat(0,1) = z_2;
+			j_quat(1,0) = -z_2;
+			j_quat(0,2) = -y_2;
+			j_quat(2,0) = y_2;
+			j_quat(1,2) = x_2;
+			j_quat(2,1) = -x_2;
+			j_3d_x.block<3,3>(0,3) = j_quat;
+
+			///////////////////////////////////
+			// for ICP
+			if (filterForICP(p_transformed, p_normal_transformed, p_proj, p_frame, params.icp_max_distance, min_normal_dot_)) {
+				// jacobian of 3d rotation with respect to params
+				Eigen::MatrixXf j_rot_x = Eigen::MatrixXf::Zero(3,6);
+				j_rot_x.block<3,3>(0,3) = j_quat;
+
+				// Try to do d[ (p_s - T(p_t)).dot(T(n_t)) ]
+				// I think I want: -d[T(p_t)] * T(n_t) + (p_s - T(p_t))*d[T(n_t)]
+				Eigen::MatrixXf jacobian_row_icp_unweighted = - ( n_3d.transpose() * j_3d_x ) + ( (p_frame - p_3d).transpose() * j_rot_x );
+				Eigen::MatrixXf jacobian_row_icp = weight_icp_ * jacobian_row_icp_unweighted;
+				const_cast<Eigen::MatrixBase<Derived>&>(partial_jmat).row(2*i) = jacobian_row_icp.row(0).cast<typename Derived::Scalar>();
+			}
+
+			/////////////////////////
+			// now color
+			// jacobian of projection with respect to 3d point
+			Eigen::MatrixXf j_proj_3d = Eigen::MatrixXf::Zero(2,3);
+			float inverse_depth = 1.0 / p_3d.z();
+			j_proj_3d(0,0) = f(0) * inverse_depth;
+			j_proj_3d(1,1) = f(1) * inverse_depth;
+			j_proj_3d(0,2) = - p_3d.x() * f(0) * inverse_depth * inverse_depth;
+			j_proj_3d(1,2) = - p_3d.y() * f(1) * inverse_depth * inverse_depth;
+
+			// jacobian of error relative to pixel coordinates
+			Eigen::MatrixXf j_error_proj = Eigen::MatrixXf::Zero(1,2);
+			j_error_proj(0,0) = getImageIntensity(frame_image_gradient_x_vec_[0], p_proj);
+			j_error_proj(0,1) = getImageIntensity(frame_image_gradient_y_vec_[0], p_proj);
+
+			// actually add to jacobian 
+			Eigen::MatrixXf jacobian_row_color = weight_color_ * j_error_proj * j_proj_3d * j_3d_x;
+			const_cast<Eigen::MatrixBase<Derived>&>(partial_jmat).row(2*i+1) = jacobian_row_color.row(0).cast<typename Derived::Scalar>();
+
+			 // todo: remove
+			float f0 = jacobian_row_color(0,0);
+			float f1 = jacobian_row_color(0,1);
+			float f2 = jacobian_row_color(0,2);
+			float f3 = jacobian_row_color(0,3);
+			float f4 = jacobian_row_color(0,4);
+			float f5 = jacobian_row_color(0,5);
+		}
+	}
+
+	// the main value function for EigenLM
+	int operator() (const InputType &x, ValueType &fvec) const
+	{
+		pcl::StopWatch sw;
+
+		//Eigen::VectorXf errors_f = Eigen::VectorXf::Zero(values());
+		//int error_f_index = 0;
+		fvec.setZero();
+		size_t fvec_start_index = 0;
+
+		////////////////////////////
+		// the reprojected feature error
+		last_error_features_ = 0;
+		size_t feature_error_count = 0;
+		if (params.combined_weight_features > 0) {
+			feature_error_count = valuesFeatures();
+			last_error_features_ = errorFeatures(x, fvec.segment(fvec_start_index, feature_error_count));
+			fvec_start_index += feature_error_count;
+		}
+
+		if (params.combined_icp_and_color) {
+			//////////////////////////////
+			// Combined ICP and Color
+			last_error_icp_ = 0;
+			last_error_color_ = 0;
+			size_t icp_and_color_error_count = 0;
+			// if either weight is positive, do it all!
+			if (params.combined_weight_icp_points > 0 || params.combined_weight_color > 0) {
+				// YOU NEED TO TWIDDLE THIS CODE TO CHECK ERROR
+#ifndef CHECK_OPENCL_ERROR
+				if (params.use_opencl) {
+					icp_and_color_error_count = valuesICPAndColor();
+					errorICPAndColorOpenCL(x, fvec.segment(fvec_start_index, icp_and_color_error_count));
+					fvec_start_index += icp_and_color_error_count;
+				}
+				else
+#endif
+				{
+					// CPU version:
+					icp_and_color_error_count = valuesICPAndColor();
+					errorICPAndColor(x, fvec.segment(fvec_start_index, icp_and_color_error_count));
+					fvec_start_index += icp_and_color_error_count;
+				}
+
+				// OpenCL version:
+#ifdef CHECK_OPENCL_ERROR
+				if (params.use_opencl) {
+					cout << "About to call errorICPAndColorOpenCL" << endl;
+					ValueType test_error;
+					test_error.resize(values());
+					errorICPAndColorOpenCL(x, test_error);
+					
+
+					// todo: remove
+					// find the last disagreement
+					int last_icp_problem_error = -1;
+					int last_color_problem_error = -1;
+					float last_icp_problem_diff = 0;
+					float last_color_problem_diff = 0;
+					int count_icp_problem = 0;
+					int count_color_problem = 0;
+					for (size_t i = 0; i < values() / 2; i++) {
+						size_t index_icp = 2*i;
+						size_t index_color = 2*i+1;
+						float diff_icp = fvec[index_icp] - test_error[index_icp];
+						float diff_color = fvec[index_color] - test_error[index_color];
+						if (fabs(diff_icp) > OPENCL_TEST_EPSILON) {
+							last_icp_problem_error = i;
+							last_icp_problem_diff = diff_icp;
+							count_icp_problem++;
+						}
+						if (fabs(diff_color) > OPENCL_TEST_EPSILON) {
+							last_color_problem_error = i;
+							last_color_problem_diff = diff_color;
+							count_color_problem++;
+						}
+					}
+					cout << "-----last_icp_problem_error (i): " << last_icp_problem_error << endl;
+					cout << "last_icp_problem_diff: " << last_icp_problem_diff << endl;
+					cout << "count_icp_problem: " << count_icp_problem << endl;
+					cout << "-----last_color_problem_error (i): " << last_color_problem_error << endl;
+					cout << "last_color_problem_diff: " << last_color_problem_diff << endl;
+					cout << "count_color_problem: " << count_color_problem << endl;
+				}
+#endif
+			}
+		}
+		else {
+			///////////////////////////////
+			// ICP
+			last_error_icp_ = 0;
+			size_t icp_error_count = 0;
+			if (params.combined_weight_icp_points > 0) {
+				icp_error_count = valuesICP();
+				last_error_icp_ = errorICP(x, fvec.segment(fvec_start_index, icp_error_count));
+				fvec_start_index += icp_error_count;
+			}
+
+			////////////////////////////
+			// color error
+			last_error_color_ = 0;
+			size_t color_error_count = 0;
+			if (params.combined_weight_color > 0) {
+				color_error_count = valuesColor();
+				last_error_color_ = errorColor(x, fvec.segment(fvec_start_index, color_error_count));
+				fvec_start_index += color_error_count;
+			}
+		}
+
+		last_error_total_ = sqrt((last_error_icp_*last_error_icp_) + (last_error_features_*last_error_features_) + (last_error_color_*last_error_color_));
+		if (params.combined_verbose) {
+			cout << "total_icp_error: " << last_error_icp_ << endl;
+			cout << "total_feature_error: " << last_error_features_ << endl;
+			cout << "total_dense_color_error: " << last_error_color_ << endl;
+			cout << "total error: " << last_error_total_ << endl;
+		}
+
+		rs_f.push(sw.getTime());
+
+		return 0;
+	}
+
+	int df (const InputType &x, JacobianType &jmat) const
+	{
+		pcl::StopWatch sw;
+
+		// actual analytic jacobian
+		if (params.combined_weight_features > 0) throw new exception("not implemented for features");
+
+		// initialize jacobian matrix
+		jmat.setZero();
+		int jmat_start_index = 0;
+
+		if (params.combined_icp_and_color) {
+			////////////////////////////////
+			// ICP and Color combined jacobian
+			int icp_and_color_error_count = 0;
+			if (params.combined_weight_icp_points > 0 || params.combined_weight_color > 0) {
+				// YOU NEED TO TWIDDLE TO CHECK DF
+#ifndef CHECK_OPENCL_DF
+				if (params.use_opencl) {
+					icp_and_color_error_count = valuesICPAndColor();
+					dfICPAndColorOpenCL(x, jmat.block(jmat_start_index, 0, icp_and_color_error_count, 6));
+					jmat_start_index += icp_and_color_error_count;
+				}
+				else
+#endif
+				{
+					icp_and_color_error_count = valuesICPAndColor();
+					dfICPAndColor(x, jmat.block(jmat_start_index, 0, icp_and_color_error_count, 6));
+					jmat_start_index += icp_and_color_error_count;
+				}
+
+#ifdef CHECK_OPENCL_DF
+				// compare with opencl
+				if (params.use_opencl) {
+					cout << "About to call dfICPAndColorOpenCL" << endl;
+					JacobianType test_matrix;
+					test_matrix.resize(values(), 6);
+					dfICPAndColorOpenCL(x, test_matrix);
+
+
+					// test against ref
+					int last_bad_icp_df = -1;
+					int last_bad_color_df = -1;
+					float last_bad_icp_df_diff = 0;
+					float last_bad_color_df_diff = 0;
+					int count_bad_icp_df = 0;
+					int count_bad_color_df = 0;
+					for (int i = 0; i < values()/2; i++) {
+						// first just test ICP:
+						int row_icp = 2*i;
+						int row_color = 2*i+1;
+						for (int col = 0; col < 6; col++) {
+							float diff_icp = test_matrix(row_icp, col) - jmat(row_icp, col);
+							float diff_color = test_matrix(row_color, col) - jmat(row_color, col);
+							if (fabs(diff_icp) > OPENCL_TEST_EPSILON) {
+								last_bad_icp_df = i;
+								last_bad_icp_df_diff = diff_icp;
+								count_bad_icp_df++;
+							}
+							if (fabs(diff_color) > OPENCL_TEST_EPSILON) {
+								last_bad_color_df = i;
+								last_bad_color_df_diff = diff_color;
+								count_bad_color_df++;
+							}
+						}
+					}
+					cout << "-----------last_bad_icp_df: " << last_bad_icp_df << endl;
+					cout << "last_bad_icp_df_diff: " << last_bad_icp_df_diff << endl;
+					cout << "count_bad_icp_df: " << count_bad_icp_df << endl;
+					cout << "-----------last_bad_color_df: " << last_bad_color_df << endl;
+					cout << "last_bad_color_df_diff: " << last_bad_color_df_diff << endl;
+					cout << "count_bad_color_df: " << count_bad_color_df << endl;
+				}
+#endif
+			}
+		}
+		else {
+			//////////////////////////////////
+			// ICP jacobian
+			int icp_error_count = 0;
+			if (params.combined_weight_icp_points > 0) {
+				icp_error_count = valuesICP();
+				dfICP(x, jmat.block(jmat_start_index, 0, icp_error_count, 6));
+				jmat_start_index += icp_error_count;
+			}
+
+			/////////////////////////////////////
+			// Color jacobian
+			int color_error_count = 0;
+			if (params.combined_weight_color > 0) {
+				color_error_count = valuesColor();
+				dfColor(x, jmat.block(jmat_start_index, 0, color_error_count, 6));
+				jmat_start_index += color_error_count;
+			}
+		}
+
+		rs_df.push(sw.getTime());
+
+		return 0;
+	}
+
+	// try a CPU implementation of Gauss Newton before messing with OpenCL
+	void solveGaussNewton(const InputType &x, InputType &x_result, int& iterations, ValueType& error_vector) {
+		x_result = x;
+		JacobianType J(values(), 6);
+		error_vector = ValueType(values());
+		
+		for (iterations = 1; iterations <= params.combined_gauss_newton_iterations; iterations++) {
+			operator() (x_result, error_vector);
+			df(x_result, J);
+
+			pcl::StopWatch sw;
+			Eigen::MatrixXf LHS = (J.transpose()*J).cast<float>();
+			//cout << "(J.transpose()*J).cast<float>();   : " << sw.getTime() << endl;
+			sw.reset();
+			Eigen::VectorXf RHS = -(J.transpose()*error_vector).cast<float>();
+			//cout << "-(J.transpose()*error_vector).cast<float>();   : " << sw.getTime() << endl;
+			sw.reset();
+			InputType x_delta = (LHS.colPivHouseholderQr().solve(RHS)).cast<Scalar>();
+			//cout << "(LHS.colPivHouseholderQr().solve(RHS)).cast<Scalar>();   : " << sw.getTime() << endl;
+
+			//cout << "x_delta: " << x_delta.transpose() << endl;
+			
+			x_result += x_delta;
+
+			//const static float min_norm_to_continue = 1e-6;
+			//if (x_delta.norm() < min_norm_to_continue) break;
+		}
+	}
+};

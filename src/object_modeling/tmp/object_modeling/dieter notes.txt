@@ -1,0 +1,28 @@
+notes for talking to dieter:
+
+- patch orientation
+- analyze plane slipping
+- color masking:
+	- boosting?
+	- color averaging?
+	- color space?
+- associating model points with frame points (negative information)
+
+- objects in patches
+
+Things I said I'd do but didn't:
+- avoid masking out fully contained skin pixels
+- record a new sequence with a modified object eliminating the tricky side, though I can see that other sides may be tricky as well, and more generally, a lot of objects have tricky views.
+- run the old truck sequence through the patch volumes just to see if I can get any semblance of loop closure working on that.  I'm not optimistic.
+
+Something else:
+- linear interpolate color (eh...not important when voxels > pixels)
+
+
+from talk:
+- neighborhood search (frame to model as opposed to model to frame)
+- collect in-hand sequences with kinect 2
+- do the patch volume reorientation
+- jump back to old volumes for alignment
+- DEMONSTRATE complete map
+- RSS RGB-D workshop (may 30) ("infinite mapping")

@@ -1,0 +1,103 @@
+// windows hack
+//double round(double x) { return floor(x + 0.5); }
+//float round(float x) { return floor(x + 0.5); }
+
+// from pcl vis_test.cpp (or whatever it was called originally)
+#if 0
+int user_data;
+
+void
+viewerOneOff (pcl::visualization::PCLVisualizer& viewer)
+{
+    viewer.setBackgroundColor (1.0, 0.5, 1.0);
+    pcl::PointXYZ o;
+    o.x = 1.0;
+    o.y = 0;
+    o.z = 0;
+    viewer.addSphere (o, 0.25, "sphere", 0);
+    std::cout << "i only run once" << std::endl;
+}
+
+void
+viewerPsycho (pcl::visualization::PCLVisualizer& viewer)
+{
+    static unsigned count = 0;
+    std::stringstream ss;
+    ss << "Once per viewer loop: " << count++;
+    viewer.removeShape ("text", 0);
+    viewer.addText (ss.str(), 200, 300, "text", 0);
+
+    //FIXME: possible race condition here:
+    user_data++;
+}
+#endif
+
+// not needed here:
+Eigen::Matrix3f getProjectionMatrix(const Eigen::Vector2f& focal_lengths, const Eigen::Vector2f& center)
+{
+	Eigen::Matrix3f result = Eigen::Matrix3f::Zero();
+	result(0,0) = focal_lengths(0);
+	result(1,1) = focal_lengths(1);
+	result(0,2) = center(0);
+	result(1,2) = center(1);
+	result(2,2) = 1.0;
+	return result;
+}
+
+// not needed here:
+void getProjectedCloudImage(CloudT::Ptr cloud_ptr, cv::Mat& result, cv::Mat& result_mask) {
+	int rows = cloud_ptr->height;
+	int cols = cloud_ptr->width;
+
+	Eigen::Vector2f f(525,525);
+	Eigen::Vector2f c(cols / 2.0, rows / 2.0);
+    Eigen::Matrix3f proj_m = getProjectionMatrix(f, c);
+
+    result = cv::Mat::zeros(rows, cols, CV_8UC3);
+    result_mask = cv::Mat::zeros(rows, cols, CV_8UC1);
+
+    // could use z_buffer for mask at end
+    cv::Mat z_buffer(rows, cols, CV_32FC1, cv::Scalar(10000));
+
+    for (int row = 0; row < rows; row++) {
+    	for (int col = 0; col < cols; col++) {
+    		PointT& p = cloud_ptr->at(col, row);
+    		if (!pcl_isnan(p.z)) {
+    			Eigen::Vector3f projected = proj_m * p.getVector3fMap();
+    			projected /= projected[2];
+    			int row_p = round(projected[1]);
+    			int col_p = round(projected[0]);
+
+    			// debug
+				if (row_p >= 0 && row_p < rows && col_p >= 0 && col_p < cols) {
+					if (p.z < z_buffer.at<float>(row_p, col_p)) {
+						result.at<cv::Vec3b>(row_p, col_p)[0] = p.b;
+						result.at<cv::Vec3b>(row_p, col_p)[1] = p.g;
+						result.at<cv::Vec3b>(row_p, col_p)[2] = p.r;
+						z_buffer.at<float>(row_p, col_p) = p.z;
+						result_mask.at<uchar>(row_p, col_p) = 255;
+					}
+    			}
+				else {
+					//cout << "oob: " << row_p << "," << col_p << endl;
+				}
+    		}
+    	}
+    }
+}
+
+// not needed here:
+/*
+ * The result of this correctly has 0 error for masked pixels
+ */
+void getColorDifference(const cv::Mat & image_1, const cv::Mat & image_2, const cv::Mat & mask, cv::Mat & result)
+{
+	cv::Mat image_1_float, image_2_float;
+	image_1.convertTo(image_1_float, CV_32F);
+	image_2.convertTo(image_2_float, CV_32F);
+	cv::Mat image_1_mono, image_2_mono;
+	cv::cvtColor(image_1_float, image_1_mono, CV_BGR2GRAY);
+	cv::cvtColor(image_2_float, image_2_mono, CV_BGR2GRAY);
+	result = cv::Mat::zeros(image_1.size(), CV_32FC1);
+	cv::subtract(image_1_mono, image_2_mono, result, mask);
+}

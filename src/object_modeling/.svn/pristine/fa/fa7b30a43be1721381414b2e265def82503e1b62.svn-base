@@ -1,0 +1,2681 @@
+--cam-fx 540 --cam-fy 540 --cam-fix 
+--icfix  --icdo 0.5
+
+// wall, fails:
+--pause --cdi --input "C:\devdata\bag\intel-10-fs2" --fs 480 --md --ra --vn 512 --vs 0.01 --oc --crs 0.5 --ocln
+
+// fruit 1, works ok
+--input "C:\devdata\bag\new-fruit-1-fs2" --fs 50 --fe 150 --icfix --icdo 1.3 --md --ra --vn 512 --vs 0.002 --oc --crs 0.5 --ocln
+
+// fruit 2 (vs 0.0015) (fails):
+--input "C:\devdata\bag\new-fruit-2-fs2" --fs 50 --icfix --icdo 1.3 --md --ra --vn 512 --vs 0.0015 --oc --crs 0.5 --ocln
+
+// wall (fs0):
+--show-volume --pause --cdi --input "C:\devdata\bag\intel-10-fs0" --fs 1450 --md --ra --vn 512 --vs 0.01 --oc --crs 0.5 --ocln
+
+// different focal?  No, same problem...
+--cam-fx 540 --cam-fy 540 --cam-fix  --show-volume --pause --cdi --input "C:\devdata\bag\intel-10-fs0" --fs 1450 --md --ra --vn 512 --vs 0.01 --oc --crs 0.5 --ocln
+
+// how about starting a little later (and forcing 525 focal)
+// good lord, nan color error on first frame!
+// great lord, I can't reproduce them even running THE SAME EXACT LAUNCH
+--cam-fx 525 --cam-fy 525 --cam-fix --show-volume --pause --cdi --input "C:\devdata\bag\intel-10-fs0" --fs 1460 --md --ra --vn 512 --vs 0.01 --oc --crs 0.5 --ocln
+--cv --pause --input "C:\devdata\bag\intel-10-fs0" --fs 1460 --md --ra --vn 512 --vs 0.01 --oc --crs 0.5 --ocln
+
+// um...nans gone...find them again
+--cv --cdi --pause --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --fs 1460 --md --ra --vn 512 --vs 0.01 --oc --crs 0.5 --ocln
+
+// Right, THIS JUST DID IT AGAIN:
+// and consistently???  I'm going to reboot
+// first run after reboot, no nans!
+// right...well, I guess stop unless they show up again...
+
+Hand histogram filename set to: "C:\devdata\bag\intel-10-fs0\hand.yml"
+Object histogram filename set to: "C:\devdata\bag\intel-10-fs0\object.yml"
+Using default combined_image_error
+params.full_command_line:
+--cv --cdi --pause --cam-fx 525 --cam-fy 525 --cam-fix --input C:\devdata\bag\in
+tel-10-fs0 --fs 1460 --md --ra --vn 512 --vs 0.01 --oc --crs 0.5 --ocln
+Initializing OpenCL object and context
+cl::Platform::get(): CL_SUCCESS
+number of platforms: 2
+Platform 0: NVIDIA CUDA
+Found desired platform: NVIDIA CUDA
+Using CL_DEVICE_TYPE_DEFAULT
+Number of devices 1
+Currently defaulting to device 0
+create program
+kernel size: 18220
+build program
+done building program
+Build Status: 0
+Build Options:
+Build Log:
+
+create program
+kernel size: 10158
+build program
+done building program
+Build Status: 0
+Build Options:
+Build Log:
+
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-118899000.pcd"
+[TIMING] computeNormals took 249ms.
+[TIMING] OpenCL addFrame took 639ms.
+[TIMING] renderVolumeWithOpenCL took 93ms.
+Overall Time per frame (ms):
+ Mean: 1029 Std: 0 Last Value: 1029 Count: 1 Min: 1029 Max: 1029 Total: 1029
+Added 1/1 frames
+[TIMING] [OVERALL] alignAndAddFrame took 1029ms.
+processFrame result: 1
+waiting for key at end of frame
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-177201000.pcd"
+[TIMING] computeNormals took 249ms.
+[TIMING] renderVolumeWithOpenCL took 31ms.
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 0ms.
+total_icp_error: 146.509
+total_dense_color_error: 19.0637
+total error: 147.744
+total_icp_error: 74.9221
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+total_icp_error: 126.31
+total_dense_color_error: 18.4332
+total error: 127.648
+total_icp_error: 89.0479
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+total_icp_error: 118.816
+total_dense_color_error: 18.2572
+total error: 120.21
+total_icp_error: 104.631
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+total_icp_error: 117.435
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+total_icp_error: 118.696
+total_dense_color_error: 18.253
+total error: 120.091
+total_icp_error: 118.41
+total_dense_color_error: 18.2443
+total error: 119.807
+total_icp_error: 117.803
+total_dense_color_error: 18.2269
+total error: 119.205
+total_icp_error: 116.687
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+total_icp_error: 117.676
+total_dense_color_error: 18.2234
+total error: 119.079
+total_icp_error: 117.506
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+total_icp_error: 117.658
+total_dense_color_error: 18.2227
+total error: 119.06
+total_icp_error: 117.622
+total_dense_color_error: 18.2212
+total error: 119.025
+total_icp_error: 117.549
+total_dense_color_error: 18.2185
+total error: 118.952
+total_icp_error: 117.383
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+total_icp_error: 117.534
+total_dense_color_error: 18.2179
+total error: 118.938
+[TIMING] Eigen::LevenbergMarquardt took 873ms.
+f() timing (This ICP iteration) (ms):
+ Mean: 31 Std: 0 Last Value: 31 Count: 18 Min: 31 Max: 31 Total: 558
+df() timing (This ICP iteration) (ms):
+ Mean: 15 Std: 0 Last Value: 15 Count: 10 Min: 15 Max: 15 Total: 150
+LM iterations (count):
+ Mean: 11 Std: 0 Last Value: 11 Count: 1 Min: 11 Max: 11 Total: 11
+For iteration: 1
+Translation distance: 0.00289423
+Rotation angle: 0.0059802
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 1 Min: 1 Max: 1 Total: 1
+ICP time per iteration (ms):
+ Mean: 982 Std: 0 Last Value: 982 Count: 1 Min: 982 Max: 982 Total: 982
+Final error icp: 117.534
+Final error color: 18.2179
+Final error total: 118.938
+Final error according to optimizer: 118.933
+[TIMING] alignWithICP took 998ms.
+[TIMING] OpenCL addFrame took 31ms.
+[TIMING] renderVolumeWithOpenCL took 93ms.
+Overall Time per frame (ms):
+ Mean: 1216.5 Std: 265.165 Last Value: 1404 Count: 2 Min: 1029 Max: 1404 Total:
+2433
+Added 2/2 frames
+[TIMING] [OVERALL] alignAndAddFrame took 1419ms.
+processFrame result: 1
+waiting for key at end of frame
+
+
+
+
+
+/////////////////////////
+// continuing
+// icp off?
+--wp -1 --cv --cdi --pause --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --fs 1460 --md --ra --vn 512 --vs 0.01 --oc --crs 0.5 --ocln
+// that first frame?
+--fs 1461 --wp -1 --cv --cdi --pause --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --md --ra --vn 512 --vs 0.01 --oc --crs 0.5 --ocln
+// indeed...only that first frame?  (ICP back on)
+--fs 1461 --cv --cdi --pause --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --md --ra --vn 512 --vs 0.01 --oc --crs 0.5 --ocln
+// icp is breaking it
+--fs 1461 --wp 1 --cv --cdi --pause --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --md --ra --vn 512 --vs 0.01 --oc --crs 0.5 --ocln
+// yup, wp 1 (instead of 40) looks better
+--fs 1461 --fe 1800 --wp 1 --cv --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --md --ra --vn 512 --vs 0.01 --oc --crs 0.5 --ocln
+// based on values, try wp a bit higher (this errors)
+--wp 2 --fs 1461 --fe 1800 --cv --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --md --ra --vn 512 --vs 0.01 --oc --crs 0.5 --ocln
+--fs 1461 --fe 1800 --cv --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --md --ra --vn 512 --vs 0.01 --oc --crs 0.5 --ocln
+// ok that back at wp 1 was ok, now try full rendering for alignment (4x as slow)
+--fs 1461 --fe 1800 --cv --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --md --ra --vn 512 --vs 0.01 --oc --ocln
+
+
+////////////////////////////
+// THE NANS ARE BACK
+[TIMING] [OVERALL] alignAndAddFrame took 873ms.
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582842-786989000.pcd"
+[TIMING] computeNormals took 234ms.
+[TIMING] renderVolumeWithOpenCL took 109ms.
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 10.778
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+[TIMING] Eigen::LevenbergMarquardt took 171ms.
+f() timing (This ICP iteration) (ms):
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms):
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count):
+ Mean: 5.77181 Std: 3.08904 Last Value: 1 Count: 149 Min: 1 Max: 17 Total: 860
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 149 Min: 1 Max: 1 Total: 149
+ICP time per iteration (ms):
+ Mean: 1151.19 Std: 453.669 Last Value: 390 Count: 149 Min: 374 Max: 2589 Total:
+ 171528
+Final error icp: 10.778
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+[TIMING] alignWithICP took 421ms.
+[TIMING] OpenCL addFrame took 15ms.
+[TIMING] renderVolumeWithOpenCL took 124ms.
+Overall Time per frame (ms):
+ Mean: 1589.75 Std: 458.49 Last Value: 842 Count: 150 Min: 795 Max: 3026 Total:
+238462
+Added 150/150 frames
+[TIMING] [OVERALL] alignAndAddFrame took 858ms.
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582842-841679000.pcd"
+[TIMING] computeNormals took 234ms.
+[TIMING] renderVolumeWithOpenCL took 124ms.
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 10.6828
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+[TIMING] Eigen::LevenbergMarquardt took 171ms.
+f() timing (This ICP iteration) (ms):
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms):
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count):
+ Mean: 5.74 Std: 3.10321 Last Value: 1 Count: 150 Min: 1 Max: 17 Total: 861
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 150 Min: 1 Max: 1 Total: 150
+ICP time per iteration (ms):
+ Mean: 1146.22 Std: 456.231 Last Value: 405 Count: 150 Min: 374 Max: 2589 Total:
+ 171933
+Final error icp: 10.6828
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+[TIMING] alignWithICP took 421ms.
+[TIMING] OpenCL addFrame took 31ms.
+[TIMING] renderVolumeWithOpenCL took 124ms.
+Overall Time per frame (ms):
+ Mean: 1584.79 Std: 460.993 Last Value: 842 Count: 151 Min: 795 Max: 3026 Total:
+ 239304
+Added 151/151 frames
+[TIMING] [OVERALL] alignAndAddFrame took 842ms.
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582842-896435000.pcd"
+[TIMING] computeNormals took 234ms.
+[TIMING] renderVolumeWithOpenCL took 124ms.
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 10.8409
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+[TIMING] Eigen::LevenbergMarquardt took 171ms.
+f() timing (This ICP iteration) (ms):
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms):
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count):
+ Mean: 5.70861 Std: 3.11681 Last Value: 1 Count: 151 Min: 1 Max: 17 Total: 862
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 151 Min: 1 Max: 1 Total: 151
+ICP time per iteration (ms):
+ Mean: 1141.42 Std: 458.521 Last Value: 421 Count: 151 Min: 374 Max: 2589 Total:
+ 172354
+Final error icp: 10.8409
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+[TIMING] alignWithICP took 436ms.
+[TIMING] OpenCL addFrame took 31ms.
+[TIMING] renderVolumeWithOpenCL took 124ms.
+Overall Time per frame (ms):
+ Mean: 1580.01 Std: 463.23 Last Value: 858 Count: 152 Min: 795 Max: 3026 Total:
+240162
+Added 152/152 frames
+[TIMING] [OVERALL] alignAndAddFrame took 873ms.
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582842-946748000.pcd"
+[TIMING] computeNormals took 234ms.
+[TIMING] renderVolumeWithOpenCL took 109ms.
+[TIMING] icp_combined_functor constructor: 0ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 10.3424
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+[TIMING] Eigen::LevenbergMarquardt took 156ms.
+f() timing (This ICP iteration) (ms):
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms):
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count):
+ Mean: 5.67763 Std: 3.12986 Last Value: 1 Count: 152 Min: 1 Max: 17 Total: 863
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 152 Min: 1 Max: 1 Total: 152
+ICP time per iteration (ms):
+ Mean: 1136.47 Std: 461.047 Last Value: 390 Count: 152 Min: 374 Max: 2589 Total:
+ 172744
+Final error icp: 10.3424
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+[TIMING] alignWithICP took 421ms.
+[TIMING] OpenCL addFrame took 31ms.
+[TIMING] renderVolumeWithOpenCL took 124ms.
+Overall Time per frame (ms):
+ Mean: 1575.19 Std: 465.543 Last Value: 842 Count: 153 Min: 795 Max: 3026 Total:
+ 241004
+Added 153/153 frames
+[TIMING] [OVERALL] alignAndAddFrame took 842ms.
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582842-989753000.pcd"
+[TIMING] computeNormals took 249ms.
+[TIMING] renderVolumeWithOpenCL took 124ms.
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 10.7118
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+[TIMING] Eigen::LevenbergMarquardt took 187ms.
+f() timing (This ICP iteration) (ms):
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms):
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count):
+ Mean: 5.64706 Std: 3.14239 Last Value: 1 Count: 153 Min: 1 Max: 17 Total: 864
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 153 Min: 1 Max: 1 Total: 153
+ICP time per iteration (ms):
+ Mean: 1131.8 Std: 463.154 Last Value: 421 Count: 153 Min: 374 Max: 2589 Total:
+173165
+Final error icp: 10.7118
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+[TIMING] alignWithICP took 436ms.
+[TIMING] OpenCL addFrame took 31ms.
+[TIMING] renderVolumeWithOpenCL took 124ms.
+Overall Time per frame (ms):
+ Mean: 1570.53 Std: 467.604 Last Value: 858 Count: 154 Min: 795 Max: 3026 Total:
+ 241862
+Added 154/154 frames
+[TIMING] [OVERALL] alignAndAddFrame took 873ms.
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582843-047568000.pcd"
+[TIMING] computeNormals took 234ms.
+[TIMING] renderVolumeWithOpenCL took 124ms.
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 11.0245
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+[TIMING] Eigen::LevenbergMarquardt took 171ms.
+f() timing (This ICP iteration) (ms):
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms):
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count):
+ Mean: 5.61688 Std: 3.15441 Last Value: 1 Count: 154 Min: 1 Max: 17 Total: 865
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 154 Min: 1 Max: 1 Total: 154
+ICP time per iteration (ms):
+ Mean: 1127.18 Std: 465.178 Last Value: 421 Count: 154 Min: 374 Max: 2589 Total:
+ 173586
+Final error icp: 11.0245
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+[TIMING] alignWithICP took 436ms.
+[TIMING] OpenCL addFrame took 31ms.
+[TIMING] renderVolumeWithOpenCL took 124ms.
+Overall Time per frame (ms):
+ Mean: 1565.94 Std: 469.584 Last Value: 858 Count: 155 Min: 795 Max: 3026 Total:
+ 242720
+Added 155/155 frames
+[TIMING] [OVERALL] alignAndAddFrame took 873ms.
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582843-101102000.pcd"
+[TIMING] computeNormals took 249ms.
+[TIMING] renderVolumeWithOpenCL took 124ms.
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 11.3035
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+[TIMING] Eigen::LevenbergMarquardt took 171ms.
+f() timing (This ICP iteration) (ms):
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms):
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+LM iterations (count):
+ Mean: 5.5871 Std: 3.16595 Last Value: 1 Count: 155 Min: 1 Max: 17 Total: 866
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 155 Min: 1 Max: 1 Total: 155
+ICP time per iteration (ms):
+ Mean: 1122.52 Std: 467.279 Last Value: 405 Count: 155 Min: 374 Max: 2589 Total:
+ 173991
+Final error icp: 11.3035
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+[TIMING] alignWithICP took 436ms.
+[TIMING] OpenCL addFrame took 31ms.
+[TIMING] renderVolumeWithOpenCL took 109ms.
+Overall Time per frame (ms):
+ Mean: 1561.4 Std: 471.486 Last Value: 858 Count: 156 Min: 795 Max: 3026 Total:
+243578
+Added 156/156 frames
+[TIMING] [OVERALL] alignAndAddFrame took 858ms.
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582843-151850000.pcd"
+[TIMING] computeNormals took 249ms.
+[TIMING] renderVolumeWithOpenCL took 124ms.
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 15ms.
+total_icp_error: 11.8609
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+[TIMING] Eigen::LevenbergMarquardt took 156ms.
+f() timing (This ICP iteration) (ms):
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms):
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count):
+ Mean: 5.55769 Std: 3.17702 Last Value: 1 Count: 156 Min: 1 Max: 17 Total: 867
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 156 Min: 1 Max: 1 Total: 156
+ICP time per iteration (ms):
+ Mean: 1117.92 Std: 469.299 Last Value: 405 Count: 156 Min: 374 Max: 2589 Total:
+ 174396
+Final error icp: 11.8609
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+[TIMING] alignWithICP took 421ms.
+[TIMING] OpenCL addFrame took 31ms.
+[TIMING] renderVolumeWithOpenCL took 124ms.
+Overall Time per frame (ms):
+ Mean: 1556.82 Std: 473.467 Last Value: 842 Count: 157 Min: 795 Max: 3026 Total:
+ 244420
+Added 157/157 frames
+[TIMING] [OVERALL] alignAndAddFrame took 858ms.
+processFrame result: 1
+continuing to process waitkey after last input file
+Press any key to continue . . .
+
+
+// The nans are still back
+Final error according to optimizer: 1.#QNAN
+[TIMING] alignWithICP took 452ms.
+[TIMING] OpenCL addFrame took 31ms.
+[TIMING] renderVolumeWithOpenCL took 140ms.
+Overall Time per frame (ms):
+ Mean: 1482.32 Std: 509.492 Last Value: 920 Count: 190 Min: 811 Max: 3931 Total:
+ 281640
+Added 190/190 frames
+[TIMING] [OVERALL] alignAndAddFrame took 920ms.
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582844-819122000.pcd"
+[TIMING] computeNormals took 234ms.
+[TIMING] renderVolumeWithOpenCL took 140ms.
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 46ms.
+total_icp_error: 6.49314
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+[TIMING] Eigen::LevenbergMarquardt took 171ms.
+f() timing (This ICP iteration) (ms):
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms):
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+LM iterations (count):
+ Mean: 4.71579 Std: 3.41693 Last Value: 1 Count: 190 Min: 1 Max: 23 Total: 896
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 190 Min: 1 Max: 1 Total: 190
+ICP time per iteration (ms):
+ Mean: 1033.68 Std: 514.721 Last Value: 436 Count: 190 Min: 390 Max: 3494 Total:
+ 196400
+Final error icp: 6.49314
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+[TIMING] alignWithICP took 468ms.
+[TIMING] OpenCL addFrame took 31ms.
+[TIMING] renderVolumeWithOpenCL took 140ms.
+Overall Time per frame (ms):
+ Mean: 1479.29 Std: 509.869 Last Value: 904 Count: 191 Min: 811 Max: 3931 Total:
+ 282544
+Added 191/191 frames
+[TIMING] [OVERALL] alignAndAddFrame took 920ms.
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582844-869737000.pcd"
+[TIMING] computeNormals took 249ms.
+[TIMING] renderVolumeWithOpenCL took 140ms.
+[TIMING] icp_combined_functor constructor: 0ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 5.95949
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+[TIMING] Eigen::LevenbergMarquardt took 171ms.
+f() timing (This ICP iteration) (ms):
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms):
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count):
+ Mean: 4.69634 Std: 3.41852 Last Value: 1 Count: 191 Min: 1 Max: 23 Total: 897
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 191 Min: 1 Max: 1 Total: 191
+ICP time per iteration (ms):
+ Mean: 1030.64 Std: 515.087 Last Value: 452 Count: 191 Min: 390 Max: 3494 Total:
+ 196852
+Final error icp: 5.95949
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+[TIMING] alignWithICP took 483ms.
+[TIMING] OpenCL addFrame took 31ms.
+[TIMING] renderVolumeWithOpenCL took 140ms.
+Overall Time per frame (ms):
+ Mean: 1476.46 Std: 510.042 Last Value: 936 Count: 192 Min: 811 Max: 3931 Total:
+ 283480
+Added 192/192 frames
+[TIMING] [OVERALL] alignAndAddFrame took 936ms.
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582844-920478000.pcd"
+[TIMING] computeNormals took 234ms.
+[TIMING] renderVolumeWithOpenCL took 140ms.
+[TIMING] icp_combined_functor constructor: 0ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 46ms.
+total_icp_error: 5.69905
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+[TIMING] Eigen::LevenbergMarquardt took 171ms.
+f() timing (This ICP iteration) (ms):
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms):
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count):
+ Mean: 4.67708 Std: 3.41997 Last Value: 1 Count: 192 Min: 1 Max: 23 Total: 898
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 192 Min: 1 Max: 1 Total: 192
+ICP time per iteration (ms):
+ Mean: 1027.54 Std: 515.526 Last Value: 436 Count: 192 Min: 390 Max: 3494 Total:
+ 197288
+Final error icp: 5.69905
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+[TIMING] alignWithICP took 468ms.
+[TIMING] OpenCL addFrame took 31ms.
+[TIMING] renderVolumeWithOpenCL took 156ms.
+Overall Time per frame (ms):
+ Mean: 1473.58 Std: 510.286 Last Value: 920 Count: 193 Min: 811 Max: 3931 Total:
+ 284400
+Added 193/193 frames
+[TIMING] [OVERALL] alignAndAddFrame took 920ms.
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582844-959098000.pcd"
+[TIMING] computeNormals took 234ms.
+[TIMING] renderVolumeWithOpenCL took 140ms.
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 5.41583
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+[TIMING] Eigen::LevenbergMarquardt took 171ms.
+f() timing (This ICP iteration) (ms):
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms):
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count):
+ Mean: 4.65803 Std: 3.42131 Last Value: 1 Count: 193 Min: 1 Max: 23 Total: 899
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 193 Min: 1 Max: 1 Total: 193
+ICP time per iteration (ms):
+ Mean: 1024.48 Std: 515.942 Last Value: 436 Count: 193 Min: 390 Max: 3494 Total:
+ 197724
+Final error icp: 5.41583
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+[TIMING] alignWithICP took 468ms.
+[TIMING] OpenCL addFrame took 31ms.
+[TIMING] renderVolumeWithOpenCL took 140ms.
+Overall Time per frame (ms):
+ Mean: 1470.72 Std: 510.512 Last Value: 920 Count: 194 Min: 811 Max: 3931 Total:
+ 285320
+Added 194/194 frames
+[TIMING] [OVERALL] alignAndAddFrame took 920ms.
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582845-012765000.pcd"
+[TIMING] computeNormals took 234ms.
+[TIMING] renderVolumeWithOpenCL took 140ms.
+[TIMING] icp_combined_functor constructor: 0ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 5.26253
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+[TIMING] Eigen::LevenbergMarquardt took 171ms.
+f() timing (This ICP iteration) (ms):
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms):
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+LM iterations (count):
+ Mean: 4.63918 Std: 3.42253 Last Value: 1 Count: 194 Min: 1 Max: 23 Total: 900
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 194 Min: 1 Max: 1 Total: 194
+ICP time per iteration (ms):
+ Mean: 1021.44 Std: 516.335 Last Value: 436 Count: 194 Min: 390 Max: 3494 Total:
+ 198160
+Final error icp: 5.26253
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+[TIMING] alignWithICP took 468ms.
+[TIMING] OpenCL addFrame took 31ms.
+[TIMING] renderVolumeWithOpenCL took 140ms.
+Overall Time per frame (ms):
+ Mean: 1467.9 Std: 510.72 Last Value: 920 Count: 195 Min: 811 Max: 3931 Total: 2
+86240
+Added 195/195 frames
+[TIMING] [OVERALL] alignAndAddFrame took 920ms.
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582845-062402000.pcd"
+[TIMING] computeNormals took 234ms.
+[TIMING] renderVolumeWithOpenCL took 156ms.
+[TIMING] icp_combined_functor constructor: 0ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 5.14926
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+[TIMING] Eigen::LevenbergMarquardt took 171ms.
+f() timing (This ICP iteration) (ms):
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms):
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count):
+ Mean: 4.62051 Std: 3.42363 Last Value: 1 Count: 195 Min: 1 Max: 23 Total: 901
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 195 Min: 1 Max: 1 Total: 195
+ICP time per iteration (ms):
+ Mean: 1018.44 Std: 516.706 Last Value: 436 Count: 195 Min: 390 Max: 3494 Total:
+ 198596
+Final error icp: 5.14926
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+[TIMING] alignWithICP took 452ms.
+[TIMING] OpenCL addFrame took 31ms.
+[TIMING] renderVolumeWithOpenCL took 171ms.
+Overall Time per frame (ms):
+ Mean: 1485.48 Std: 565.762 Last Value: 4914 Count: 196 Min: 811 Max: 4914 Total
+: 291154
+Added 196/196 frames
+[TIMING] [OVERALL] alignAndAddFrame took 4914ms.
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582845-115235000.pcd"
+[TIMING] computeNormals took 234ms.
+[TIMING] renderVolumeWithOpenCL took 140ms.
+[TIMING] icp_combined_functor constructor: 0ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 46ms.
+total_icp_error: 5.27459
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+[TIMING] Eigen::LevenbergMarquardt took 171ms.
+f() timing (This ICP iteration) (ms):
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms):
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+LM iterations (count):
+ Mean: 4.60204 Std: 3.42462 Last Value: 1 Count: 196 Min: 1 Max: 23 Total: 902
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 196 Min: 1 Max: 1 Total: 196
+ICP time per iteration (ms):
+ Mean: 1015.55 Std: 516.965 Last Value: 452 Count: 196 Min: 390 Max: 3494 Total:
+ 199048
+Final error icp: 5.27459
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+[TIMING] alignWithICP took 483ms.
+[TIMING] OpenCL addFrame took 31ms.
+[TIMING] renderVolumeWithOpenCL took 156ms.
+Overall Time per frame (ms):
+ Mean: 1482.69 Std: 565.673 Last Value: 936 Count: 197 Min: 811 Max: 4914 Total:
+ 292090
+Added 197/197 frames
+[TIMING] [OVERALL] alignAndAddFrame took 951ms.
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582845-175050000.pcd"
+[TIMING] computeNormals took 249ms.
+[TIMING] renderVolumeWithOpenCL took 156ms.
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 5.29628
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+[TIMING] Eigen::LevenbergMarquardt took 171ms.
+f() timing (This ICP iteration) (ms):
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms):
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count):
+ Mean: 4.58376 Std: 3.4255 Last Value: 1 Count: 197 Min: 1 Max: 23 Total: 903
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 197 Min: 1 Max: 1 Total: 197
+ICP time per iteration (ms):
+ Mean: 1012.69 Std: 517.205 Last Value: 452 Count: 197 Min: 390 Max: 3494 Total:
+ 199500
+Final error icp: 5.29628
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+[TIMING] alignWithICP took 468ms.
+[TIMING] OpenCL addFrame took 31ms.
+
+
+
+/////////////////////////////////
+// Here's a full log of instant nans:
+Hand histogram filename set to: "C:\devdata\bag\intel-10-fs0\hand.yml"
+Object histogram filename set to: "C:\devdata\bag\intel-10-fs0\object.yml"
+Using default combined_image_error
+params.full_command_line: 
+--fs 1461 --fe 1800 --cv --cam-fx 525 --cam-fy 525 --cam-fix --input C:\devdata\bag\intel-10-fs0 --md --ra --vn 512 --vs 0.01 --oc --ocln 
+Initializing OpenCL object and context
+cl::Platform::get(): CL_SUCCESS
+number of platforms: 2
+Platform 0: NVIDIA CUDA
+Found desired platform: NVIDIA CUDA
+Using CL_DEVICE_TYPE_DEFAULT
+Number of devices 1
+Currently defaulting to device 0
+create program
+kernel size: 18220
+build program
+done building program
+Build Status: 0
+Build Options:	
+Build Log:	 
+
+create program
+kernel size: 10158
+build program
+done building program
+Build Status: 0
+Build Options:	
+Build Log:	 
+
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-177201000.pcd"
+Overall Time per frame (ms):
+ Mean: 1045 Std: 0 Last Value: 1045 Count: 1 Min: 1045 Max: 1045 Total: 1045
+Added 1/1 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-220425000.pcd"
+[TIMING] icp_combined_functor constructor: 0ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 15ms.
+total_icp_error: 3.34132
+total_dense_color_error: 27.3961
+total error: 27.5991
+total_icp_error: 2.06653
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+total_icp_error: 3.05179
+total_dense_color_error: 23.1263
+total error: 23.3268
+total_icp_error: 2.3796
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+total_icp_error: 2.92284
+total_dense_color_error: 21.1311
+total error: 21.3322
+total_icp_error: 2.65642
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+total_icp_error: 2.88678
+total_dense_color_error: 20.6345
+total error: 20.8354
+total_icp_error: 2.82285
+total_dense_color_error: 19.6487
+total error: 19.8504
+total_icp_error: 2.68846
+total_dense_color_error: 17.4547
+total error: 17.6605
+total_icp_error: 2.4371
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+total_icp_error: 2.64539
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+total_icp_error: 2.68354
+total_dense_color_error: 17.3804
+total error: 17.5864
+total_icp_error: 2.67448
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+total_icp_error: 2.68266
+total_dense_color_error: 17.3656
+total error: 17.5716
+total_icp_error: 2.68071
+total_dense_color_error: 17.3358
+total error: 17.5418
+total_icp_error: 2.67715
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+total_icp_error: 2.68042
+total_dense_color_error: 17.3297
+total error: 17.5358
+total_icp_error: 2.67983
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 19.3889 Std: 9.01723 Last Value: 15 Count: 18 Min: 15 Max: 46 Total: 349
+df() timing (This ICP iteration) (ms): 
+ Mean: 38.5 Std: 7.90569 Last Value: 31 Count: 10 Min: 31 Max: 46 Total: 385
+LM iterations (count): 
+ Mean: 10 Std: 0 Last Value: 10 Count: 1 Min: 10 Max: 10 Total: 10
+For iteration: 1
+Translation distance: 0.00347462
+Rotation angle: 0.00323889
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 1 Min: 1 Max: 1 Total: 1
+ICP time per iteration (ms):
+ Mean: 1981 Std: 0 Last Value: 1981 Count: 1 Min: 1981 Max: 1981 Total: 1981
+Final error icp: 2.67983
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 17.5486
+Overall Time per frame (ms):
+ Mean: 1731.5 Std: 970.858 Last Value: 2418 Count: 2 Min: 1045 Max: 2418 Total: 3463
+Added 2/2 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-265213000.pcd"
+[TIMING] icp_combined_functor constructor: 0ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 5.28599
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 5.5 Std: 6.36396 Last Value: 1 Count: 2 Min: 1 Max: 10 Total: 11
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 2 Min: 1 Max: 1 Total: 2
+ICP time per iteration (ms):
+ Mean: 1169.5 Std: 1147.63 Last Value: 358 Count: 2 Min: 358 Max: 1981 Total: 2339
+Final error icp: 5.28599
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 1409 Std: 885.043 Last Value: 764 Count: 3 Min: 764 Max: 2418 Total: 4227
+Added 3/3 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-308069000.pcd"
+[TIMING] icp_combined_functor constructor: 0ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 5.59413
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 4 Std: 5.19615 Last Value: 1 Count: 3 Min: 1 Max: 10 Total: 12
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 3 Min: 1 Max: 1 Total: 3
+ICP time per iteration (ms):
+ Mean: 899 Std: 937.039 Last Value: 358 Count: 3 Min: 358 Max: 1981 Total: 2697
+Final error icp: 5.59413
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 1247.75 Std: 791.332 Last Value: 764 Count: 4 Min: 764 Max: 2418 Total: 4991
+Added 4/4 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-346691000.pcd"
+[TIMING] icp_combined_functor constructor: 0ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 5.76662
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms): 
+ Mean: 62 Std: 0 Last Value: 62 Count: 1 Min: 62 Max: 62 Total: 62
+LM iterations (count): 
+ Mean: 3.25 Std: 4.5 Last Value: 1 Count: 4 Min: 1 Max: 10 Total: 13
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 4 Min: 1 Max: 1 Total: 4
+ICP time per iteration (ms):
+ Mean: 767.75 Std: 808.868 Last Value: 374 Count: 4 Min: 358 Max: 1981 Total: 3071
+Final error icp: 5.76662
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 1160.4 Std: 712.605 Last Value: 811 Count: 5 Min: 764 Max: 2418 Total: 5802
+Added 5/5 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-391234000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 6.12783
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 2.8 Std: 4.02492 Last Value: 1 Count: 5 Min: 1 Max: 10 Total: 14
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 5 Min: 1 Max: 1 Total: 5
+ICP time per iteration (ms):
+ Mean: 685.8 Std: 724.072 Last Value: 358 Count: 5 Min: 358 Max: 1981 Total: 3429
+Final error icp: 6.12783
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 1097 Std: 656.02 Last Value: 780 Count: 6 Min: 764 Max: 2418 Total: 6582
+Added 6/6 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-432831000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 9.37813
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 2.5 Std: 3.67423 Last Value: 1 Count: 6 Min: 1 Max: 10 Total: 15
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 6 Min: 1 Max: 1 Total: 6
+ICP time per iteration (ms):
+ Mean: 631.167 Std: 661.312 Last Value: 358 Count: 6 Min: 358 Max: 1981 Total: 3787
+Final error icp: 9.37813
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 1051.71 Std: 610.729 Last Value: 780 Count: 7 Min: 764 Max: 2418 Total: 7362
+Added 7/7 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-469861000.pcd"
+[TIMING] icp_combined_functor constructor: 0ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 9.81827
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 2.28571 Std: 3.40168 Last Value: 1 Count: 7 Min: 1 Max: 10 Total: 16
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 7 Min: 1 Max: 1 Total: 7
+ICP time per iteration (ms):
+ Mean: 592.143 Std: 612.457 Last Value: 358 Count: 7 Min: 358 Max: 1981 Total: 4145
+Final error icp: 9.81827
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 1017.75 Std: 573.528 Last Value: 780 Count: 8 Min: 764 Max: 2418 Total: 8142
+Added 8/8 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-508698000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 10.0344
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms): 
+ Mean: 62 Std: 0 Last Value: 62 Count: 1 Min: 62 Max: 62 Total: 62
+LM iterations (count): 
+ Mean: 2.125 Std: 3.18198 Last Value: 1 Count: 8 Min: 1 Max: 10 Total: 17
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 8 Min: 1 Max: 1 Total: 8
+ICP time per iteration (ms):
+ Mean: 561 Std: 573.827 Last Value: 343 Count: 8 Min: 343 Max: 1981 Total: 4488
+Final error icp: 10.0344
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 991.333 Std: 542.308 Last Value: 780 Count: 9 Min: 764 Max: 2418 Total: 8922
+Added 9/9 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-552480000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 10.4849
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 2 Std: 3 Last Value: 1 Count: 9 Min: 1 Max: 10 Total: 18
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 9 Min: 1 Max: 1 Total: 9
+ICP time per iteration (ms):
+ Mean: 538.444 Std: 541.014 Last Value: 358 Count: 9 Min: 343 Max: 1981 Total: 4846
+Final error icp: 10.4849
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 970.2 Std: 515.642 Last Value: 780 Count: 10 Min: 764 Max: 2418 Total: 9702
+Added 10/10 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-599937000.pcd"
+[TIMING] icp_combined_functor constructor: 0ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 10.5708
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 1.9 Std: 2.84605 Last Value: 1 Count: 10 Min: 1 Max: 10 Total: 19
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 10 Min: 1 Max: 1 Total: 10
+ICP time per iteration (ms):
+ Mean: 520.4 Std: 513.255 Last Value: 358 Count: 10 Min: 343 Max: 1981 Total: 5204
+Final error icp: 10.5708
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 952.909 Std: 492.531 Last Value: 780 Count: 11 Min: 764 Max: 2418 Total: 10482
+Added 11/11 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-643504000.pcd"
+[TIMING] icp_combined_functor constructor: 0ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 9.27999
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 1.81818 Std: 2.7136 Last Value: 1 Count: 11 Min: 1 Max: 10 Total: 20
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 11 Min: 1 Max: 1 Total: 11
+ICP time per iteration (ms):
+ Mean: 507.091 Std: 488.913 Last Value: 374 Count: 11 Min: 343 Max: 1981 Total: 5578
+Final error icp: 9.27999
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 939.75 Std: 471.817 Last Value: 795 Count: 12 Min: 764 Max: 2418 Total: 11277
+Added 12/12 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-689232000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 15ms.
+total_icp_error: 9.44708
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 1.75 Std: 2.59808 Last Value: 1 Count: 12 Min: 1 Max: 10 Total: 21
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 12 Min: 1 Max: 1 Total: 12
+ICP time per iteration (ms):
+ Mean: 494.667 Std: 468.143 Last Value: 358 Count: 12 Min: 343 Max: 1981 Total: 5936
+Final error icp: 9.44708
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 928.615 Std: 453.511 Last Value: 795 Count: 13 Min: 764 Max: 2418 Total: 12072
+Added 13/13 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-725112000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 46ms.
+total_icp_error: 9.57939
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+LM iterations (count): 
+ Mean: 1.69231 Std: 2.49615 Last Value: 1 Count: 13 Min: 1 Max: 10 Total: 22
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 13 Min: 1 Max: 1 Total: 13
+ICP time per iteration (ms):
+ Mean: 485.385 Std: 449.46 Last Value: 374 Count: 13 Min: 343 Max: 1981 Total: 6310
+Final error icp: 9.57939
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 919.071 Std: 437.18 Last Value: 795 Count: 14 Min: 764 Max: 2418 Total: 12867
+Added 14/14 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-784945000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 10.4676
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 1.64286 Std: 2.40535 Last Value: 1 Count: 14 Min: 1 Max: 10 Total: 23
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 14 Min: 1 Max: 1 Total: 14
+ICP time per iteration (ms):
+ Mean: 477.429 Std: 432.852 Last Value: 374 Count: 14 Min: 343 Max: 1981 Total: 6684
+Final error icp: 10.4676
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 909.8 Std: 422.805 Last Value: 780 Count: 15 Min: 764 Max: 2418 Total: 13647
+Added 15/15 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-837180000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 10.2895
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 1.6 Std: 2.32379 Last Value: 1 Count: 15 Min: 1 Max: 10 Total: 24
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 15 Min: 1 Max: 1 Total: 15
+ICP time per iteration (ms):
+ Mean: 470.533 Std: 417.961 Last Value: 374 Count: 15 Min: 343 Max: 1981 Total: 7058
+Final error icp: 10.2895
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 901.688 Std: 409.755 Last Value: 780 Count: 16 Min: 764 Max: 2418 Total: 14427
+Added 16/16 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-880435000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 46ms.
+total_icp_error: 11.4288
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 1.5625 Std: 2.25 Last Value: 1 Count: 16 Min: 1 Max: 10 Total: 25
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 16 Min: 1 Max: 1 Total: 16
+ICP time per iteration (ms):
+ Mean: 464.5 Std: 404.509 Last Value: 374 Count: 16 Min: 343 Max: 1981 Total: 7432
+Final error icp: 11.4288
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 896.353 Std: 397.353 Last Value: 811 Count: 17 Min: 764 Max: 2418 Total: 15238
+Added 17/17 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-931626000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 12.4164
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+LM iterations (count): 
+ Mean: 1.52941 Std: 2.18282 Last Value: 1 Count: 17 Min: 1 Max: 10 Total: 26
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 17 Min: 1 Max: 1 Total: 17
+ICP time per iteration (ms):
+ Mean: 458.235 Std: 392.515 Last Value: 358 Count: 17 Min: 343 Max: 1981 Total: 7790
+Final error icp: 12.4164
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 890.722 Std: 386.229 Last Value: 795 Count: 18 Min: 764 Max: 2418 Total: 16033
+Added 18/18 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-986492000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 11.9783
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 1.5 Std: 2.12132 Last Value: 1 Count: 18 Min: 1 Max: 10 Total: 27
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 18 Min: 1 Max: 1 Total: 18
+ICP time per iteration (ms):
+ Mean: 453.556 Std: 381.313 Last Value: 374 Count: 18 Min: 343 Max: 1981 Total: 8164
+Final error icp: 11.9783
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 886.526 Std: 375.792 Last Value: 811 Count: 19 Min: 764 Max: 2418 Total: 16844
+Added 19/19 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582837-040244000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 46ms.
+total_icp_error: 12.0694
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 1.47368 Std: 2.06474 Last Value: 1 Count: 19 Min: 1 Max: 10 Total: 28
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 19 Min: 1 Max: 1 Total: 19
+ICP time per iteration (ms):
+ Mean: 448.526 Std: 371.217 Last Value: 358 Count: 19 Min: 343 Max: 1981 Total: 8522
+Final error icp: 12.0694
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 881.95 Std: 366.341 Last Value: 795 Count: 20 Min: 764 Max: 2418 Total: 17639
+Added 20/20 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582837-091005000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 12.0219
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 1.45 Std: 2.01246 Last Value: 1 Count: 20 Min: 1 Max: 10 Total: 29
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 20 Min: 1 Max: 1 Total: 20
+ICP time per iteration (ms):
+ Mean: 444 Std: 361.883 Last Value: 358 Count: 20 Min: 343 Max: 1981 Total: 8880
+Final error icp: 12.0219
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 878.571 Std: 357.401 Last Value: 811 Count: 21 Min: 764 Max: 2418 Total: 18450
+Added 21/21 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582837-138948000.pcd"
+[TIMING] icp_combined_functor constructor: 0ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 11.7599
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 1.42857 Std: 1.96396 Last Value: 1 Count: 21 Min: 1 Max: 10 Total: 30
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 21 Min: 1 Max: 1 Total: 21
+ICP time per iteration (ms):
+ Mean: 440.667 Std: 353.05 Last Value: 374 Count: 21 Min: 343 Max: 1981 Total: 9254
+Final error icp: 11.7599
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 874.773 Std: 349.242 Last Value: 795 Count: 22 Min: 764 Max: 2418 Total: 19245
+Added 22/22 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582837-195234000.pcd"
+[TIMING] icp_combined_functor constructor: 0ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 11.5902
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 1.40909 Std: 1.91881 Last Value: 1 Count: 22 Min: 1 Max: 10 Total: 31
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 22 Min: 1 Max: 1 Total: 22
+ICP time per iteration (ms):
+ Mean: 436.909 Std: 344.992 Last Value: 358 Count: 22 Min: 343 Max: 1981 Total: 9612
+Final error icp: 11.5902
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 872 Std: 341.472 Last Value: 811 Count: 23 Min: 764 Max: 2418 Total: 20056
+Added 23/23 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582837-244164000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 12.425
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 1.3913 Std: 1.87663 Last Value: 1 Count: 23 Min: 1 Max: 10 Total: 32
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 23 Min: 1 Max: 1 Total: 23
+ICP time per iteration (ms):
+ Mean: 433.478 Std: 337.462 Last Value: 358 Count: 23 Min: 343 Max: 1981 Total: 9970
+Final error icp: 12.425
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 869.458 Std: 334.198 Last Value: 811 Count: 24 Min: 764 Max: 2418 Total: 20867
+Added 24/24 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582837-290387000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 46ms.
+total_icp_error: 11.9469
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 1.375 Std: 1.83712 Last Value: 1 Count: 24 Min: 1 Max: 10 Total: 33
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 24 Min: 1 Max: 1 Total: 24
+ICP time per iteration (ms):
+ Mean: 431 Std: 330.267 Last Value: 374 Count: 24 Min: 343 Max: 1981 Total: 10344
+Final error icp: 11.9469
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 866.48 Std: 327.5 Last Value: 795 Count: 25 Min: 764 Max: 2418 Total: 21662
+Added 25/25 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582837-332224000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 12.0509
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 1.36 Std: 1.8 Last Value: 1 Count: 25 Min: 1 Max: 10 Total: 34
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 25 Min: 1 Max: 1 Total: 25
+ICP time per iteration (ms):
+ Mean: 428.72 Std: 323.515 Last Value: 374 Count: 25 Min: 343 Max: 1981 Total: 10718
+Final error icp: 12.0509
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 864.346 Std: 321.068 Last Value: 811 Count: 26 Min: 764 Max: 2418 Total: 22473
+Added 26/26 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582837-373951000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 11.5853
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 1.34615 Std: 1.76505 Last Value: 1 Count: 26 Min: 1 Max: 10 Total: 35
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 26 Min: 1 Max: 1 Total: 26
+ICP time per iteration (ms):
+ Mean: 426.615 Std: 317.16 Last Value: 374 Count: 26 Min: 343 Max: 1981 Total: 11092
+Final error icp: 11.5853
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 861.778 Std: 315.116 Last Value: 795 Count: 27 Min: 764 Max: 2418 Total: 23268
+Added 27/27 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582837-417130000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 46ms.
+total_icp_error: 11.3767
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 1.33333 Std: 1.73205 Last Value: 1 Count: 27 Min: 1 Max: 10 Total: 36
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 27 Min: 1 Max: 1 Total: 27
+ICP time per iteration (ms):
+ Mean: 424.667 Std: 311.166 Last Value: 374 Count: 27 Min: 343 Max: 1981 Total: 11466
+Final error icp: 11.3767
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 859.964 Std: 309.374 Last Value: 811 Count: 28 Min: 764 Max: 2418 Total: 24079
+Added 28/28 frames
+processFrame result: 1
+continuing to process waitkey after last input file
+Press any key to continue . . . 
+
+
+
+
+///////////////////////////////
+// and now again, with this launch:
+--fs 1461 --fe 1800 --cv --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --md --ra --vn 512 --vs 0.01 --oc --ocln > log.txt
+
+Hand histogram filename set to: "C:\devdata\bag\intel-10-fs0\hand.yml"
+Object histogram filename set to: "C:\devdata\bag\intel-10-fs0\object.yml"
+Using default combined_image_error
+params.full_command_line: 
+--fs 1461 --fe 1800 --cv --cam-fx 525 --cam-fy 525 --cam-fix --input C:\devdata\bag\intel-10-fs0 --md --ra --vn 512 --vs 0.01 --oc --ocln 
+Initializing OpenCL object and context
+cl::Platform::get(): CL_SUCCESS
+number of platforms: 2
+Platform 0: NVIDIA CUDA
+Found desired platform: NVIDIA CUDA
+Using CL_DEVICE_TYPE_DEFAULT
+Number of devices 1
+Currently defaulting to device 0
+create program
+kernel size: 18220
+build program
+done building program
+Build Status: 0
+Build Options:	
+Build Log:	 
+
+create program
+kernel size: 10158
+build program
+done building program
+Build Status: 0
+Build Options:	
+Build Log:	 
+
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-177201000.pcd"
+Overall Time per frame (ms):
+ Mean: 1045 Std: 0 Last Value: 1045 Count: 1 Min: 1045 Max: 1045 Total: 1045
+Added 1/1 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-220425000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 3.34132
+total_dense_color_error: 27.3961
+total error: 27.5991
+total_icp_error: 2.06653
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+total_icp_error: 3.05179
+total_dense_color_error: 23.1263
+total error: 23.3268
+total_icp_error: 2.3796
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+total_icp_error: 2.92284
+total_dense_color_error: 21.1311
+total error: 21.3322
+total_icp_error: 2.65642
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+total_icp_error: 2.88678
+total_dense_color_error: 20.6345
+total error: 20.8354
+total_icp_error: 2.82285
+total_dense_color_error: 19.6487
+total error: 19.8504
+total_icp_error: 2.68846
+total_dense_color_error: 17.4547
+total error: 17.6605
+total_icp_error: 2.4371
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+total_icp_error: 2.64539
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+total_icp_error: 2.68354
+total_dense_color_error: 17.3804
+total error: 17.5864
+total_icp_error: 2.67448
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+total_icp_error: 2.68266
+total_dense_color_error: 17.3656
+total error: 17.5716
+total_icp_error: 2.68071
+total_dense_color_error: 17.3358
+total error: 17.5418
+total_icp_error: 2.67715
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+total_icp_error: 2.68042
+total_dense_color_error: 17.3297
+total error: 17.5358
+total_icp_error: 2.67983
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 17.6667 Std: 6.13572 Last Value: 15 Count: 18 Min: 15 Max: 31 Total: 318
+df() timing (This ICP iteration) (ms): 
+ Mean: 40 Std: 7.74597 Last Value: 31 Count: 10 Min: 31 Max: 46 Total: 400
+LM iterations (count): 
+ Mean: 10 Std: 0 Last Value: 10 Count: 1 Min: 10 Max: 10 Total: 10
+For iteration: 1
+Translation distance: 0.00347462
+Rotation angle: 0.00323889
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 1 Min: 1 Max: 1 Total: 1
+ICP time per iteration (ms):
+ Mean: 1965 Std: 0 Last Value: 1965 Count: 1 Min: 1965 Max: 1965 Total: 1965
+Final error icp: 2.67983
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 17.5486
+Overall Time per frame (ms):
+ Mean: 1715.5 Std: 948.23 Last Value: 2386 Count: 2 Min: 1045 Max: 2386 Total: 3431
+Added 2/2 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-265213000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 5.28599
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+LM iterations (count): 
+ Mean: 5.5 Std: 6.36396 Last Value: 1 Count: 2 Min: 1 Max: 10 Total: 11
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 2 Min: 1 Max: 1 Total: 2
+ICP time per iteration (ms):
+ Mean: 1154 Std: 1146.93 Last Value: 343 Count: 2 Min: 343 Max: 1965 Total: 2308
+Final error icp: 5.28599
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 1398.33 Std: 866.807 Last Value: 764 Count: 3 Min: 764 Max: 2386 Total: 4195
+Added 3/3 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-308069000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 5.59413
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+LM iterations (count): 
+ Mean: 4 Std: 5.19615 Last Value: 1 Count: 3 Min: 1 Max: 10 Total: 12
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 3 Min: 1 Max: 1 Total: 3
+ICP time per iteration (ms):
+ Mean: 883.667 Std: 936.462 Last Value: 343 Count: 3 Min: 343 Max: 1965 Total: 2651
+Final error icp: 5.59413
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 1239.75 Std: 775.563 Last Value: 764 Count: 4 Min: 764 Max: 2386 Total: 4959
+Added 4/4 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-346691000.pcd"
+[TIMING] icp_combined_functor constructor: 0ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 5.76662
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms): 
+ Mean: 62 Std: 0 Last Value: 62 Count: 1 Min: 62 Max: 62 Total: 62
+LM iterations (count): 
+ Mean: 3.25 Std: 4.5 Last Value: 1 Count: 4 Min: 1 Max: 10 Total: 13
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 4 Min: 1 Max: 1 Total: 4
+ICP time per iteration (ms):
+ Mean: 752.25 Std: 808.531 Last Value: 358 Count: 4 Min: 343 Max: 1965 Total: 3009
+Final error icp: 5.76662
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 1150.8 Std: 700.488 Last Value: 795 Count: 5 Min: 764 Max: 2386 Total: 5754
+Added 5/5 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-391234000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 6.12783
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 2.8 Std: 4.02492 Last Value: 1 Count: 5 Min: 1 Max: 10 Total: 14
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 5 Min: 1 Max: 1 Total: 5
+ICP time per iteration (ms):
+ Mean: 676.6 Std: 720.352 Last Value: 374 Count: 5 Min: 343 Max: 1965 Total: 3383
+Final error icp: 6.12783
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 1091.5 Std: 643.153 Last Value: 795 Count: 6 Min: 764 Max: 2386 Total: 6549
+Added 6/6 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-432831000.pcd"
+[TIMING] icp_combined_functor constructor: 0ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 9.37813
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 2.5 Std: 3.67423 Last Value: 1 Count: 6 Min: 1 Max: 10 Total: 15
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 6 Min: 1 Max: 1 Total: 6
+ICP time per iteration (ms):
+ Mean: 623.5 Std: 657.3 Last Value: 358 Count: 6 Min: 343 Max: 1965 Total: 3741
+Final error icp: 9.37813
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 1049.14 Std: 597.715 Last Value: 795 Count: 7 Min: 764 Max: 2386 Total: 7344
+Added 7/7 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-469861000.pcd"
+[TIMING] icp_combined_functor constructor: 15ms.
+[TIMING] icp_combined_functor.initFrame: 15ms.
+[TIMING] icp_combined_functor.initRender: 46ms.
+total_icp_error: 9.81827
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 31 Std: 0 Last Value: 31 Count: 1 Min: 31 Max: 31 Total: 31
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 2.28571 Std: 3.40168 Last Value: 1 Count: 7 Min: 1 Max: 10 Total: 16
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 7 Min: 1 Max: 1 Total: 7
+ICP time per iteration (ms):
+ Mean: 585.571 Std: 608.363 Last Value: 358 Count: 7 Min: 343 Max: 1965 Total: 4099
+Final error icp: 9.81827
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 1015.5 Std: 561.499 Last Value: 780 Count: 8 Min: 764 Max: 2386 Total: 8124
+Added 8/8 frames
+processFrame result: 1
+loading: "C:\devdata\bag\intel-10-fs0\1275582836-508698000.pcd"
+[TIMING] icp_combined_functor constructor: 0ms.
+[TIMING] icp_combined_functor.initFrame: 31ms.
+[TIMING] icp_combined_functor.initRender: 31ms.
+total_icp_error: 10.0344
+total_dense_color_error: 1.#QNAN
+total error: 1.#QNAN
+f() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+df() timing (This ICP iteration) (ms): 
+ Mean: 46 Std: 0 Last Value: 46 Count: 1 Min: 46 Max: 46 Total: 46
+LM iterations (count): 
+ Mean: 2.125 Std: 3.18198 Last Value: 1 Count: 8 Min: 1 Max: 10 Total: 17
+For iteration: 1
+Translation distance: 0
+Rotation angle: 0
+ICP iterations (count):
+ Mean: 1 Std: 0 Last Value: 1 Count: 8 Min: 1 Max: 1 Total: 8
+ICP time per iteration (ms):
+ Mean: 559.125 Std: 568.18 Last Value: 374 Count: 8 Min: 343 Max: 1965 Total: 4473
+Final error icp: 10.0344
+Final error color: 1.#QNAN
+Final error total: 1.#QNAN
+Final error according to optimizer: 1.#QNAN
+Overall Time per frame (ms):
+ Mean: 989.333 Std: 531.068 Last Value: 780 Count: 9 Min: 764 Max: 2386 Total: 8904
+Added 9/9 frames
+processFrame result: 1
+continuing to process waitkey after last input file
+Press any key to continue . . . 
+
+// same with new check:
+--c-nan --fs 1461 --fe 1800 --cv --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --md --ra --vn 512 --vs 0.01 --oc --ocln
+// sometimes yes, sometimes no...god damn it
+
+// put "bad" first frames in? shouldn't make a diff for nans
+// wow...they're not bad frames anymore!
+--c-nan --cdi --fs 1450 --fe 1800 --cv --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --md --ra --vn 512 --vs 0.01 --oc --ocln
+// now with 0.5 alignment? FAILS!
+--crs 0.5 --c-nan --cdi --fs 1450 --fe 1800 --cv --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --md --ra --vn 512 --vs 0.01 --oc --ocln
+// right...and now the SAME THING FAILS.  Something so so so so fishy here!
+--c-nan --cdi --fs 1450 --fe 1800 --cv --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --md --ra --vn 512 --vs 0.01 --oc --ocln
+// remove nvidia...now bug every time!!  Hooray!
+--c-nan --cdi --fs 1450 --fe 1800 --cv --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --md --ra --vn 512 --vs 0.01 --oc
+
+--c-nan --cdi --fs 1450 --fe 1800 --cv --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --md --ra --vn 64 --vs 0.01 --oc
+--c-nan --cdi --fs 1450 --fe 1800 --cv --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --md --ra --vn 256 --vs 0.01 --oc
+--c-nan --cdi --fs 1450 --fe 1800 --cv --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --md --ra --vn 256 --vs 0.01 --oc --ocldo
+--c-nan --cdi --fs 1450 --fe 1800 --cv --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --md --ra --vn 256 --vs 0.01 --oc --crs 0.125
+--c-nan --cdi --fs 1450 --fe 1800 --cv --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --md --ra --vn 256 --vs 0.01 --oc --crs 0.125 --ocldo
+
+Found the bug!!  Now back to nvidia:
+// This works (naturally):
+--c-nan --fs 1450 --fe 1800 --cv --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --md --ra --vn 512 --vs 0.01 --oc --ocln
+// higher res?
+--fs 1450 --fe 1800 --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --md --ra --vn 512 --vs 0.005 --vrf 0.02 --vrb 0.02 --oc --ocln
+
+// fruit after bug fix:
+--input "C:\devdata\bag\new-fruit-2-fs2" --fs 50 --fe 130 --icfix --icdo 1.3 --md --ra --vn 512 --vs 0.0015 --vrf 0.01 --vrb 0.01 --oc --ocln
+
+////////////////////////
+// Now try to get features working with PCL 1.6
+--input "C:\devdata\bag\intel-10-fs0" --fs 1450 --fe 1800 --cam-fx 525 --cam-fy 525 --cam-fix --md --ra --vn 512 --vs 0.01 --oc --ocln --of --fdi
+// yup they work now
+--input "C:\devdata\bag\intel-10-fs0" --fs 1450 --fe 1800 --cam-fx 525 --cam-fy 525 --cam-fix --md --ra --vn 512 --vs 0.01 --oc --ocln --of
+
+
+// live model a chair?
+--crs 0.5 --cam-fx 525 --cam-fy 525 --cam-fix --md --vn 256 --vs 0.01 --oc --ocln --of --max 2
+// avoid combined??
+--crs 0.5 --cam-fx 525 --cam-fy 525 --cam-fix --md --vn 256 --vs 0.01 --ocln --of --max 2
+// FAST combined
+--ra --ras 0.5 --oc --crs 0.125 --cam-fx 525 --cam-fy 525 --cam-fix --md --vn 256 --vs 0.01 --ocln --of --max 2 --icfix --icdo 1.0
+// now no featres?
+--ra --ras 0.5 --oc --crs 0.125 --cam-fx 525 --cam-fy 525 --cam-fix --md --vn 256 --vs 0.01 --ocln --max 2.5 --icfix --icdo 1.0
+
+// compare with kinfu:
+--fs 1450 --fe 1800 --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0" --md --ra --vn 512 --vs 0.01 --oc --ocln
+--cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0-picture-wall" --md --ra --vn 512 --vs 0.01 --oc --ocln
+// yay!  this works, kinfu doesn't
+
+// speedup / timing
+--fe 20 --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0-picture-wall" --md --vn 512 --vs 0.01 --oc --ocln > timing_log.txt 2>&1
+
+
+
+////////////// evan
+--cdi --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\evan-jaech" --md --ra --vn 512 --vs 0.01 --oc --ocln
+--crs 0.5 --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\evan-jaech" --md --ra --vn 512 --vs 0.02 --oc --ocln
+--crs 0.5 --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\evan-jaech" --md --ra --vn 512 --vs 0.04 --oc --ocln
+--max 5.0 --crs 0.5 --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\evan-jaech" --md --ra --vn 512 --vs 0.04 --oc --ocln --vdmax 20
+// bug finding
+// has bug:
+--cdi --fs 40 --max 5.0 --crs 0.5 --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\evan-jaech" --md --ra --vn 512 --vs 0.04 --oc --ocln --vdmax 20
+// try features:
+--of --cdi --fs 40 --max 5.0 --crs 0.5 --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\evan-jaech" --md --ra --vn 512 --vs 0.04 --oc --ocln --vdmax 20
+// features "fixes" the problem...or not????
+--of --max 5.0 --crs 0.5 --cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\evan-jaech" --md --ra --vn 512 --vs 0.04 --oc --ocln --vdmax 20
+
+// more evan:
+--nfpcl --of --md --vn 512 --vs 0.005 --oc --ocln --max 2.0 --input "C:\devdata\evan\icraC1-dump"
+(pcl normals actually slower here)
+--of --md --vn 512 --vs 0.005 --oc --ocln --max 2.0 --input "C:\devdata\evan\tvtable1-dump"
+// is smeared...try fixing focal length?
+--of --md --vn 512 --vs 0.005 --oc --ocln --max 2.0 --input "C:\devdata\evan\tvtable1-dump"  --cam-fx 525 --cam-fy 525 --cam-fix
+// still smeared...hmmm
+--of --md --vn 512 --vs 0.005 --oc --ocln --max 2.0 --input "C:\devdata\evan\smalltest2-extract-dump"
+
+// yet more evan:
+--save-object-poses --of --md --vn 512 --vs 0.005 --oc --ocln --max 2.0 --input "C:\devdata\evan\irs5floor\dump-irs5floor1_2011-02-16-15-54-17-extract.bag"
+
+--fe 10 --script --save-poses --of --md --vn 512 --vs 0.005 --oc --ocln --max 2.0 --input "C:\devdata\evan\irs5floor\dump-irs5floor1_2011-02-16-15-54-17-extract.bag" --output "C:\devdata\evan\irs5floor\dump-irs5floor1_2011-02-16-15-54-17-extract.bag-output"
+
+--fe 10 --script --save-poses --of --md --vn 512 --vs 0.005 --oc --ocln --max 2.0 --input "c:\devdata\evan\irs5floor\dump-irs5floor10_2011-02-16-16-02-52-extract.bag" --output "c:\devdata\evan\irs5floor-results-debug\dump-irs5floor10_2011-02-16-16-02-52-extract.bag-output"
+
+// jaech again now that I can do poses
+--fe 50 --save-poses --of --md --vn 512 --vs 0.005 --oc --ocln --max 2.0 --input --input 
+
+/////////////// stopping this for now
+
+// live capture
+...this is slow for some reason....weird!!
+--save-input-only --save-only-max-fps 10 --output "frames"
+--md --vn 512 --vs 0.005 --oc --ocln --max 3.0 --input "C:\devdata\chair_1"
+
+
+// chair (ugly):
+--ocln --of --nfpcl --md --vn 256 --vs 0.01 --oc --max 2.0 --input "C:\devdata\chair-dump"
+// double res?
+--ocln --of --nfpcl --md --vn 512 --vs 0.005 --oc --max 2.0 --input "C:\devdata\chair-dump"
+
+/////////////////////////// Patch volume
+--pause --pv-show-mesh --pv-graph --pv --pv-min-size 200 --md --vn 256 --vs 0.01 --oc --max 1.5 --input "C:\devdata\chair-dump"
+// home:
+--pause --pv-show-mesh --pv-graph --pv --pv-min-size 200 --md --vn 256 --vs 0.01 --oc --max 1.5 --input "E:\Intel\modeler\cube"
+// edges faster?? (So slowwww!)
+--pause --pv-show-edges --pv-show-mesh --pv-graph --pv --pv-min-size 200 --md --vn 256 --vs 0.01 --oc --max 1.5 --input "E:\Intel\modeler\cube"
+--pause --show-volume --pv-show-mesh --pv-graph --pv --pv-min-size 200 --md --vn 256 --vs 0.01 --oc --max 1.5 --input "E:\Intel\modeler\cube"
+// back at work:
+--pause --pv-graph --pv-show-graph-edges --pv-show-mesh --pv --pv-min-size 200 --md --vn 256 --vs 0.01 --oc --max 1.5 --input "C:\devdata\chair-dump"
+// home
+--pause --pv-graph --pv-show-graph-edges --pv-show-mesh --pv --pv-min-size 200 --show-volume --md --vn 256 --vs 0.01 --oc --max 1.5 --input "E:\Intel\modeler\cube"
+// work:
+--pause --pv-graph --pv-show-graph-edges --pv-show-mesh --pv --pv-min-size 200 --md --vn 256 --vs 0.01 --oc --max 1.5 --input "C:\devdata\chair-dump"
+// fake data?
+--pause --pv-graph --pv-show-graph-edges --pv-show-mesh --pv --pv-min-size 200 --md --vn 256 --vs 0.01 --oc --max 1.5 --input "C:\devdata\fake_cube_2" --input-poses "C:\devdata\fake_cube_2\object_poses.txt"
+
+// back to evan for a sec...
+--of --md --vn 512 --vs 0.005 --oc --ocln --max 2.0 --input "C:\devdata\evan\tvtable1-dump"  --cam-fx 525 --cam-fy 525 --cam-fix --output "C:\devdata\evan\tvtable1-dump-test1" --ra --save-four
+--of --md --vn 512 --vs 0.005 --oc --ocln --max 2.0 --input "C:\devdata\evan\tvtable1-dump"  --cam-fx 530 --cam-fy 530 --cam-fix --output "C:\devdata\evan\tvtable1-dump-test-530" --ra --save-four
+
+// fake data at home:
+--pause --pv-loop --pv-graph --pv-show-graph-edges --pv-show-mesh --pv --pv-min-size 200 --pv-max-age 1 --md --vn 256 --vs 0.01 --oc --max 1.5 --input "C:\devdata\dump" --input-poses "C:\devdata\dump\object_poses.txt" --input-loop-poses "C:\devdata\dump\loop_poses.txt"
+// back at work:
+--pause --pv --pv-loop --pv-show-graph-edges --pv-show-mesh --pv-max-age 1 --pv-max-age-edge 1 --pv-graph-iter 50 --pv-edge-loop-factor 5 --md --vn 256 --vs 0.01 --oc --max 1.5 --input "C:\devdata\testdata\dump" --input-poses "C:\devdata\testdata\dump\object_poses.txt" --input-loop-poses "C:\devdata\testdata\dump\loop_poses.txt" --input-loop-pvs "C:\devdata\testdata\dump\loop_which_pvs.txt"
+// change interface:
+--pause --pv --pv-loop --pv-show-graph-edges --pv-show-mesh --pv-max-age 1 --pv-max-age-edge 1 --pv-graph-iter 50 --pv-edge-loop-factor 1 --md --vn 256 --vs 0.01 --oc --max 1.5 --input "C:\devdata\testdata\dump" --debug-do-load-object-poses --debug-do-load-pv-info
+// pv real data??
+--pause --pv-graph --pv-show-graph-edges --pv-show-mesh --pv --pv-min-size 200 --pv-loop --pv-max-age 1 --pv-max-age-edge 1 --pv-graph-iter 50 --md --vn 256 --vs 0.01 --oc --max 1.5 --input "C:\devdata\chair-dump"
+
+// speed (home)
+--fe 5 --md --vn 256 --vs 0.01 --of --oc --ocln --max 3.0 --input "E:\Intel\modeler\cube"
+// speed (work)
+--c-normal --fe 5 --md --vn 256 --vs 0.01 --of --oc --ocln --max 3.0 --input "C:\devdata\cube"
+// speed (home)
+--c-normal --fe 5 --md --vn 256 --vs 0.01 --of --oc --ocln --max 3.0 --input "E:\Intel\modeler\cube"
+--cgn-gpu --fe 5 --md --vn 256 --vs 0.01 --of --oc --ocln --max 3.0 --input "E:\Intel\modeler\cube"
+// compare (home)
+--cgn-gpu --fe 10 --md --vn 256 --vs 0.01 --of --oc --ocln --max 3.0 --input "E:\Intel\modeler\cube" --output "GN-mesh" --script
+--fe 10 --md --vn 256 --vs 0.01 --of --oc --ocln --max 3.0 --input "E:\Intel\modeler\cube" --output "LM-mesh" --script
+GN: 648ms / frame, ICP: 338ms
+LM: 3069ms / frame, ICP: 3026ms
+// get yet more speed (home)
+--cgn-gpu --fe 10 --md --vn 256 --vs 0.01 --of --oc --ocln --max 3.0 --input "E:\Intel\modeler\cube"
+// mean 660ms
+// new single kernel debug
+--c-single --cdi --fe 10 --md --vn 256 --vs 0.01 --of --oc --ocln --max 3.0 --input "E:\Intel\modeler\cube"
+--c-single --fe 10 --md --vn 256 --vs 0.01 --of --oc --ocln --max 3.0 --input "E:\Intel\modeler\cube"
+// ok, now see if it works with the full reduction
+--cgn-gpu --cgn-gpu-full --fe 10 --md --vn 256 --vs 0.01 --of --oc --ocln --max 3.0 --input "E:\Intel\modeler\cube"
+// a bug...still on cpu?  Yup
+--cgn-gpu --cgn-gpu-full --fe 10 --md --vn 256 --vs 0.01 --of --oc --max 3.0 --input "E:\Intel\modeler\cube"
+// make sure new refactor of dot product works: (yup!)
+--cgn-gpu --fe 10 --md --vn 256 --vs 0.01 --of --oc --ocln --max 3.0 --input "E:\Intel\modeler\cube"
+// back to full reduction (no use of generalized reduceFloatVector)
+--cgn-gpu --cgn-gpu-full --fe 10 --md --vn 256 --vs 0.01 --of --oc --ocln --max 3.0 --input "E:\Intel\modeler\cube"
+// gotta debug that
+--c-debug-normal --fe 10 --md --vn 256 --vs 0.01 --of --oc --ocln --max 3.0 --input "E:\Intel\modeler\cube"
+--c-debug-normal --fe 10 --md --vn 256 --vs 0.01 --of --oc --max 3.0 --input "E:\Intel\modeler\cube" > debug.txt
+// I bet THIS is wrong:///wow, it wasn't.  Everything matches
+--c-debug-single --c-debug-normal --fe 10 --md --vn 256 --vs 0.01 --of --oc --max 3.0 --input "E:\Intel\modeler\cube" > debug.txt
+// As long as this matches, I can continue...
+--c-debug-normal --fe 10 --md --vn 256 --vs 0.01 --of --oc --max 3.0 --input "E:\Intel\modeler\cube" > debug.txt
+// looks good, now, FULL speed
+--cgn-gpu --cgn-gpu-full --fe 10 --md --vn 256 --vs 0.01 --of --oc --ocln --max 3.0 --input "E:\Intel\modeler\cube"
+// TIMING:
+GN: 536ms / frame, ICP: 216ms
+// FUN
+--cgn-gpu --cgn-gpu-full --md --vn 256 --vs 0.015 --of --oc --ocln --max 3.0 --input "E:\Intel\modeler\cube"
+--cgn-gpu --cgn-gpu-full --cgn-iter 30 --md --vn 256 --vs 0.015 --oc --ocln --max 3.0 --input "E:\Intel\modeler\cube"
+// hmmm...that doesnt' work...try LM...which is VERY slow....
+--md --vn 256 --vs 0.015 --oc --ocln --max 3.0 --input "E:\Intel\modeler\cube"
+// Try checking delta...
+--cdi --cgn-gpu --cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001 --md --vn 256 --vs 0.015 --oc --ocln --max 3.0 --input "E:\Intel\modeler\cube"
+--cgn-gpu --cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001 --md --vn 256 --vs 0.015 --oc --ocln --of --max 3.0
+
+// New interface:
+--of --fff --cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001 --md --vn 256 --vs 0.015 --oc --ocln --max 3.0
+// model my Livid!
+--of --fff --cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001 --md --vn 256 --vs 0.0025 --oc --ocln --max 2.0
+// face?  FAIL
+--icfix --icoz 0.75 --cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001 --md --vn 256 --vs 0.0015 --oc --ocln --max 1.0
+// map again
+--of --fff --cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001 --md --vn 256 --vs 0.015 --oc --ocln --max 3.0
+// Back at work:
+// speed:
+--of --fff --cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001 --md --vn 256 --vs 0.015 --oc --ocln --max 3.0 --input "C:\devdata\cube" --fe 10
+// pvs:
+// change interface:
+--pause --pv --pv-loop --pv-show-graph-edges --pv-show-mesh --pv-max-age 1 --pv-max-age-edge 1 --pv-graph-iter 50 --pv-edge-loop-factor 1 --md --vn 256 --vs 0.01 --oc --max 1.5 --input "C:\devdata\testdata\dump" --debug-do-load-object-poses --debug-do-load-pv-info
+// pv real data??
+--pause --pv --pvr --pv-loop --pv-show-graph-edges --pv-show-mesh --pv-max-age 1 --pv-max-age-edge 0 --pv-graph-iter 50 --pv-edge-loop-factor 1 --md --vn 256 --vs 0.01 --oc --max 1.5 --input "C:\devdata\chair-dump"
+
+/////////////////////////////////
+// Data for intel:
+// color values bad for missing points (and some extant ones!)
+// desktop
+// HUGE jump in last couple of frames
+--cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001 --md --vn 256 --vs 0.01 --oc --ocln --cam-f 364.8132 --cam-sx 320 --cam-sy 240 --cam-cx 148.4368 --cam-cy 113.3995 --input "C:\devdata\pcl_desktop_tyzx2" --fxyz --fe 295 --wc -1 --max 2.0
+// face
+--cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001 --md --vn 256 --vs 0.01 --oc --ocln --cam-f 364.8132 --cam-sx 320 --cam-sy 240 --cam-cx 148.4368 --cam-cy 113.3995 --input "C:\devdata\pcl_face_tyzx2" --fxyz --wc -1 --max 2.0
+// higher res
+--cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001 --md --vn 256 --vs 0.0025 --oc --ocln --cam-f 364.8132 --cam-sx 320 --cam-sy 240 --cam-cx 148.4368 --cam-cy 113.3995 --input "C:\devdata\pcl_face_tyzx2" --fxyz --wc -1 --max 2.0
+// fozzy
+--cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001 --md --vn 256 --vs 0.0025 --oc --ocln --cam-f 364.8132 --cam-sx 320 --cam-sy 240 --cam-cx 148.4368 --cam-cy 113.3995 --input "C:\devdata\pcl_fozzy_tyzx2" --fxyz --wc -1 --max 2.0
+// head creative
+--cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001 --md --vn 256 --vs 0.001 --icfix --icox 0 --icoy 0 --icoz 0.4 --oc --ocln --cam-fx 224.502 --cam-fy 230.494 --cam-sx 320 --cam-sy 240 --cam-cx 160 --cam-cy 120 --input "C:\devdata\pcl_head_creative2" --fxyz --wc -1 --max 2.0
+// shift up a little bit? (not much better, so don't bother)
+--cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001 --md --vn 256 --vs 0.001 --icfix --icox 0 --icoy -0.02 --icoz 0.4 --oc --ocln --cam-fx 224.502 --cam-fy 230.494 --cam-sx 320 --cam-sy 240 --cam-cx 160 --cam-cy 120 --input "C:\devdata\pcl_head_creative2" --fxyz --wc -1 --max 2.0
+
+/////////
+// camera node pvs
+--pause --show-axes --pv-camera --pv --pvr --pv-loop --pv-show-graph-edges --pv-show-mesh --pv-max-age 1 --pv-max-age-edge 1 --pv-graph-iter 50 --pv-edge-loop-factor 1 --md --vn 256 --vs 0.01 --oc --max 1.5 --input "C:\devdata\testdata\dump" --debug-do-load-object-poses --debug-do-load-pv-info --pv-optimize-always --pv-pause
+
+// try on chair? (pvr needed for real data if pv-loop active)
+--pause --show-axes --pv-camera --pv --pvr --pv-loop --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --pv-edge-loop-factor 1 --md --vn 256 --vs 0.01 --oc --max 1.5 --input "C:\devdata\chair-dump" --pv-pause --pv-optimize-always --pvr-show
+
+// avoid pauses...and other changes...check against previous
+--show-axes --pv-camera --pv --pvr --pv-loop --pv-loop-min-points 10000 --pv-min-size 200 --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --pv-edge-loop-factor 1 --md --vn 16 --vs 0.01 --oc --cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001 --max 1.5 --input "C:\devdata\chair-dump" --fi 2  --ocln
+
+/////////
+
+--ocln
+--md
+--mu
+--minput
+
+// try without stupid patch volumes
+--show-axes --vn 256 --vs 0.0025 --oc --cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001 --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --ocln --max 2 --minput --mo
+
+// ok, even with fixed masking...fails...good!
+
+// with loop
+--pv --pvr --pv-loop --pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001   --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo
+
+// without loop to compare
+--pv --pvr --pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001   --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo
+
+// and with a single volume:
+--show-axes --vn 256 --vs 0.0025 --oc --cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001   --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo
+
+// with loop and higher weight
+--pv --pvr --pv-loop --pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001   --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo --pv-edge-loop-factor 10
+// weight doesn't seem to make much difference
+
+// try a different box
+--pv --pvr --pv-loop --pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001   --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_2" --frgbd --minput --mo
+// fails...let's see why
+--pv --pvr --pv-loop --pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001   --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_2" --frgbd --minput --mo --cdi --pause --ocln
+
+--pv --pvr --pv-loop --pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001   --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_2" --frgbd --minput --mo --cdi --pause
+// so yeah...heap corruption :(
+
+// Try debugging on box 1
+--pv --pvr --pv-loop --pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001   --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo --cdi --pause --ocln
+// doesn't crash (despite same "input size" in final reduction) but does have spurious pixels in "cdi" image
+
+
+// Single volume cdi debug?
+--show-axes --vn 256 --vs 0.0025 --oc --cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001   --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo --pause --cp --cv --cdi --ocldo > log.txt
+
+// it's cgn-gpu-full + cdi, right? (YES, yes it is...cdi screws up the underlying alignment...)
+--show-axes --vn 256 --vs 0.0025 --oc --cgn-gpu-full --cgn-max-iter 500 --cgn-min-delta 0.0001   --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo --pause --cp --cv
+
+// Ok..finally got the bugs, I think...
+--show-axes --vn 256 --vs 0.0025 --oc --cgn-gpu-full --cgn-max-iter 30 --cgn-min-delta 0.0001   --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo
+
+// back to pvs
+--pv --pvr --pv-loop --pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo --cdi --ocln
+
+// what went wrong on box 2 again?
+// originally frame 20
+// now frame 18 looks weird with --id 0.005 instead of original 0.05
+// fs 16 "fixes" the problem, so it's old parts of the model...
+--pv --pvr --pv-loop --pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_2" --frgbd --minput --mo --cdi --ocln --pause --cp --id 0.005 
+
+// also, why don't I see ICP error?  Oh, a stupid bug!  Wheeee
+// Also, THIS LOOKS LIKE THE BEST YET:
+--pv --pvr --pv-loop --pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo --cdi --ocln --wp 5
+
+// Compare against no-loop
+--pv --pvr --pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo --cdi --ocln --wp 5
+// no-loop is better too, now, but loop still looks better....
+
+// And against single volume
+--pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 256 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo --cdi --ocln --wp 5
+// right...this looks good too...icp weighted higher helps...
+
+// move on to box 2
+--pv --pvr --pv-loop --pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_2" --frgbd --minput --mo --cdi --ocln --wp 5
+// looks good...no problem anymore with wp 5...try wp 1 as a sanity check (should fail like above) (and does...good)
+// So this means that the problem above is caused by color outliers...gotta do something about those!
+--pv --pvr --pv-loop --pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_2" --frgbd --minput --mo --cdi --ocln
+// oh and for total sanity, this should also be the same (fail):
+--pv --pvr --pv-loop --pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_2" --frgbd --minput --mo --cdi --ocln --wp 1
+// good!  It fails
+
+// try no-loop
+--pv --pvr --pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_2" --frgbd --minput --mo --cdi --ocln --wp 5
+// no fail, but not quite as good
+
+// and finally single volume
+--pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 256 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_2" --frgbd --minput --mo --cdi --ocln --wp 5
+// can see it "smoothing out" front on second pass, and fails at the very end.  Now try yet another!
+
+///////// box 3
+
+--pv --pvr --pv-loop --pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_3" --frgbd --minput --mo --cdi --ocln --wp 5 --pv-pause
+// loop is full of fail!
+
+
+// jump to single
+--pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 256 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_3" --frgbd --minput --mo --cdi --ocln --wp 5
+
+
+
+
+
+// back looking at box 1
+--pv --pvr --pv-loop --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo --cdi --ocln --wp 5 --pv-loop-di --pv-p-after --pv-p-before
+
+// apple
+--pv --pvr --pv-loop --pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\apple\apple_1" --frgbd --minput --mo --cdi --ocln --wp 5
+
+// mug
+--pv --pvr --pv-loop --pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\coffee_mug\coffee_mug_1" --frgbd --minput --mo --cdi --ocln --wp 5
+
+// box 3 screws up demo
+--pv --pvr --pv-loop --pv-camera --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_3" --frgbd --minput --mo --cdi --ocln --wp 5 --pv-pause --cie y
+
+
+///////////////////////////
+// box 1
+// with loop
+--pv --pvr --pv-loop --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid
+
+// and without loop
+--pv --pvr --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid
+
+// and with single volume
+--pvr --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 256 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid
+
+
+// box 2
+// with loop
+--pv --pvr --pv-loop --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_2" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid
+
+// and without loop
+--pv --pvr --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_2" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid
+
+// and with single volume
+--pvr --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 256 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_2" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid
+// note: fails at very end
+
+
+
+// box 3
+// with loop
+--pv --pvr --pv-loop --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_3" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid
+
+// and without loop
+--pv --pvr --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_3" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid
+
+// and with single volume
+--pvr --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 256 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_3" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid
+
+// with loop (brightness)
+--pv --pvr --pv-loop --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_3" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid --cie y --cdi --pv-loop-di --pv-p-after
+
+// with loop (ycbcr) (best!)
+--pv --pvr --pv-loop --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_3" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid --cie ycbcr
+
+
+// keyboard 1 for fun (has bogus end points) (--fe 230)
+--pv --pvr --pv-loop --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\keyboard\keyboard_1" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid --cie ycbcr
+
+// single will work (0.0025)
+--pvr --pv-loop --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 256 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\keyboard\keyboard_1" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid --cie ycbcr --fe 230
+
+// single (0.001, etc.)
+--pvr --pv-loop --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 320 --vs 0.001 --vr 0.01 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\keyboard\keyboard_1" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid --cie ycbcr --fe 230
+
+
+
+// I don't know...whatever I'm doing...
+--pv --pvr --pv-loop --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid --cie ycbcr
+
+// higher res? (0.001 causes mem problems)
+--pv --pvr --pv-loop --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.002 --vr 0.01 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid --cie ycbcr
+///// THIS IS WORSE...SUGGESTS FIX NEEDED
+
+////////////
+// ok, compare final volume quality:
+--pv --pvr --pv-loop --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid --cie ycbcr --output "cereal_1_loop" --save-poses --save-objects
+
+--pvr --pv-loop --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 256 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "cereal_1_loop" --minput  --ocln --wp 5 --mesh-avoid --cie ycbcr --load-object-poses --input-file-object-poses "object_poses_loop.txt" --output "cereal_1_loop_output"
+
+// with no loop
+--pv --pvr --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid --cie ycbcr --output "cereal_1_no_loop" --save-poses --save-objects
+
+--pvr --pv-loop --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 256 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "cereal_1_no_loop" --minput  --ocln --wp 5 --mesh-avoid --cie ycbcr --load-object-poses --input-file-object-poses "object_poses_sequential.txt" --output "cereal_1_no_loop_output"
+
+// and single
+--pvr --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 256 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid --cie ycbcr --output "cereal_1_single" --save-poses 
+
+//////// special, switch back to --cie cbcr which worked (well, kind of)
+--pv --pvr --pv-loop --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid --cie cbcr --output "cereal_1_loop_cbcr" --save-poses --save-objects
+
+--pvr --pv-loop --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 256 --vs 0.0025 --oc --cgn-gpu-full --max 1.5 --minput  --ocln --wp 5 --mesh-avoid --cie ycbcr --input "cereal_1_loop_cbcr" --load-object-poses --input-file-object-poses "object_poses_loop.txt" --output "cereal_1_loop_cbcr_output"
+
+
+// cereal one loop again (ycbcr, try to fix loop)
+--pv --pvr --pv-loop --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-show-normals --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid --cie ycbcr --output "cereal_1_loop_ma_45" --save-poses --pv-loop-max-angle 45 > log.txt
+// ok, 45 does the trick
+
+// make single volume w/o requiring masked clouds in same folder
+--pvr --pv-loop --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-show-normals --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 256 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid --cie ycbcr --save-poses --pv-loop-max-angle 45 --load-object-poses --input-file-object-poses "C:\devlibs\object_modeling\object_model\cereal_1_loop_ma_45\object_poses_loop.txt" --output "C:\devlibs\object_modeling\object_model\cereal_1_loop_ma_45_single" --script
+
+
+// why loading weird files?
+--pv --pvr --pv-loop --pv-loop-min-points 10000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-show-normals --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_4" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid --cie ycbcr --pv-loop-max-angle 45 > log.txt
+
+// dieter meeting
+--pv --pvr --pv-loop --pv-loop-min-points 1000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-show-normals --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --max 1.5  --input "C:\devdata\rgbd-turntable\rgbd-dataset\food_box\food_box_2" --frgbd --minput --mo --ocln --wp 5 --mesh-avoid --cie ycbcr --output "dieter" --save-poses --pv-loop-max-angle 45
+
+// picture wall (dieter meeting)
+--pv --pvr --pv-loop --pv-loop-min-points 1000 --pv-min-size 500 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-show-normals --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vn 16 --vs 0.0025 --oc --cgn-gpu-full --input "C:\devdata\bag\intel-10-fs0-picture-wall" --ocln --wp 5 --mesh-avoid --cie ycbcr --output "dieter-wall" --save-poses --pv-loop-max-angle 45
+
+////////// intel wall (for slides)
+--cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0-picture-wall" --vn 512 --vs 0.01 --oc --ocln --cgn-gpu-full --cie ycbcr --output "picture-wall-mesh" --mesh-avoid
+
+--cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0-picture-wall" --vn 512 --vs 0.01 --oc --ocln --cgn-gpu-full --cie y --output "picture-wall-cdi-y" --mesh-avoid --ra --save-four --cdi --save-cdi
+
+--cam-fx 525 --cam-fy 525 --cam-fix --input "C:\devdata\bag\intel-10-fs0-picture-wall" --vn 512 --vs 0.01 --oc --ocln --cgn-gpu-full --cie y --output "picture-wall-cdi-y-2" --mesh-avoid --cdi --save-cdi
+
+/////// chair (for timing)
+--input "C:\devdata\chair-dump" --max 2.0 --vn 256 --vs 0.01 --oc --ocln --cgn-gpu-full --cie ycbcr --output "chair-timing" --mesh-avoid
+
+// add features?
+--input "C:\devdata\chair-dump" --max 2.0 --vn 256 --vs 0.01 --oc --ocln --cgn-gpu-full --cie ycbcr --output "chair-timing" --mesh-avoid --of --fff > log.txt 2> log-2.txt
+
+--input "C:\devdata\chair-dump" --max 2.0 --vn 256 --vs 0.01 --oc --ocln  --cgn-gpu-full --cie ycbcr --output "chair-timing" --mesh-avoid --of --fff --n-opencl > log.txt 2> log-2.txt
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+--input "C:\devdata\truck" --mh --mo --vs 0.002
+
+--input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_1" --frgbd --minput --mo --max 1.5  --vs 0.002
+
+// HUGE expresso
+--input "C:\devdata\oni\espresso-huge" --fonipng --max 3 --fi 3 
+
+// harder espresso:
+// now get GPU memory error at home (with max 4):
+--input "C:\devdata\oni\espresso-hard" --fonipng --max 4 --fi 3
+
+// easier espresso:
+--input "C:\devdata\oni\espresso-easy" --fonipng --max 3 --fi 3  
+
+// painting
+--input "C:\devdata\oni\painting-water" --fonipng --max 3 --fi 3  
+
+// thin
+--input "C:\devdata\oni\thin-1" --fonipng --max 1.2 --fi 3 --fe 450 --vs 0.005
+--input "C:\devdata\oni\thin-2" --fonipng --max 1.2 --fi 3 --fe 900 --vs 0.005
+--input "C:\devdata\oni\thin-3" --fonipng --max 1.2 --fi 3 --vs 0.005
+
+--input "C:\devdata\oni\kevin\kevin-2" --fonipng --max 3 --fi 3  
+
+--input "C:\devdata\oni\kevin\kevin-3" --fonipng --max 3 --fs 870
+
+--load-object-poses --input-file-object-poses "C:\Users\Peter\Documents\object_modeling\Release\thin-1-compare\object_poses_sequential.txt"
+
+///////////
+// CURRENT
+--output "dump" --input "C:\devdata\oni\espresso-huge" --fonipng --max 3 --fi 3  --pv  --show-axes --pv-show-graph-edges --pv-show-mesh --pv-show-normals --oclpath "..\OpenCLStaticLib"    --ocln   --oc  --c-show-render --cdis 0.5 --pv-be 0.1   --pv-loop-di --pv-debug-vis  --pv-loop-features  --pv-loop-min-coverage "0.5" --pv-loop-skip 10 --pv-max-side 128   --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 50 --save-poses --pv-max-mb 500
+
+
+--pv-debug-add-volumes --pause
+
+--v-normals-delta 1.0
+--pause --v-sphere --v-sphere-r 0.5 --vn 64 --vs 0.05
+
+--vs 0.01 
+// This is probably too short
+--pv-max-age-loop 30
+
+// failed attempt to hack marching cubes:
+--mesh-weights
+// failed attempt to merge gaps:
+--pv-split-overlap 1
+
+// really lock in those loop closures...
+--pv-edge-loop-factor 100
+
+--mesh-show 
+--vs 0.1
+--pv-bi 0.2 
+--pv-graph-iter 100
+--pv-keyframe-match-d "1.5"
+--pv-keyframe-match-a "60"
+--pv-keyframe-debug
+--of --fff --fdi
+--pv-verbose 
+
+// can see refrigerator fail on use_sigma
+--fs 344
+
+// THIS IS WHERE THE problem is on espresso with icp:
+--fs 254
+--wp 0 "fixes"
+--id 0.1 (but it happened with 0.05 default as well)
+
+--cie ycbcr 
+--pv-verbose
+--pv-loop 
+--ra --save-four --cdi --save-cdi
+
+>1-log.txt  2>2-log.txt
+>1-log-bug.txt  2>2-log-bug.txt
+>1-log-new.txt  2>2-log-new.txt
+>1-log-old.txt  2>2-log-old.txt
+
+--cgn-max-iter
+--save-four
+--save-cdi
+--vs 0.002 
+--vs 0.0025
+--vs 0.01
+--pv --vn 16
+--vn 256
+--pv --vn 16 --pv-loop
+--pv-verbose
+--ocln 
+--n-smooth #
+--n-opencl-debug
+--c-new
+--c-new-debug
+--cdi --cdis 0.5 
+--c-render-buffer
+--c-verbose
+--cie ycbcr 
+--of --fff 
+--cp 
+--pause  
+--oclpath "..\..\OpenCLStaticLib"
+--openni
+
+ --n-opencl   FORCE TRUE
+ --cgn-gpu-full   FORCE TRUE
+
+// ycbcr iscauses problems on the chair around frame 15 or so
+// cbcr fixes this (exposure problem)
+--cie ycbcr
+--cie cbcr
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////  SCRIPT
+// most recent attempt at cereal video:
+--script --pv-loop-min-points 10000 --pv-loop-max-angle 45 --pv-min-size 1000 --pv-show-graph-edges --pv-show-mesh --pv-show-normals --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --vs 0.002 --oc --c-new --cgn-gpu-full --c-gpu-conv --max 1.5 --ocln --cie ycbcr --save-poses --input C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_3 --frgbd --minput --mo --n-opencl --oclpath ..\OpenCLStaticLib --vn 16 --pv --pv-loop 
+
+
+
+//////////////////// movie making
+--input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_3" --fe 200 --frgbd --max 2 --mo --minput  --pv-loop --pv --vn 16  --vs 0.002  --pv-loop-min-points 5000 --pv-loop-max-angle 45 --pv-min-size 1000 --pv-show-graph-edges --pv-show-mesh --pv-show-normals --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --pv-max-side "-1.0"  --oc --c-gpu-conv   --oclpath "..\OpenCLStaticLib"    --ocln --c-show-render --cie ycbcr --cdis 0.5 --save-viewer   --output "cereal_3_bgr_2"
+
+--input "C:\devdata\rgbd-turntable\rgbd-dataset\cereal_box\cereal_box_3" --fe 200 --frgbd --max 2 --mo --minput  --pv-loop --pv --vn 16  --vs 0.002  --pv-loop-min-points 5000 --pv-loop-max-angle 45 --pv-min-size 1000 --pv-show-graph-edges --pv-show-mesh --pv-show-normals --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50 --pv-max-side "-1.0"  --oc --c-gpu-conv   --oclpath "..\OpenCLStaticLib"    --ocln --c-show-render --cie ycbcr --cdis 0.5 --save-viewer --output "cereal_3_bgr_2"
+
+--save-render-align
+/////////////////////////////////
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//// Blake raw file
+--input "C:\devdata\intel\raw_fozzy" --fraw --max 3 --cam-sx 320 --cam-sy 240 --cam-f 364.8132 --cam-cx 148.4368 --cam-cy 113.3995  --vr 0.02   --vs 0.002  --vn 256    --pv-loop-min-points 5000 --pv-loop-max-angle 45 --pv-min-size 1000 --show-axes --pv-show-graph-edges --pv-show-mesh --pv-show-normals --pv-max-age 0 --pv-max-age-edge 0 --pv-graph-iter 50   --oc  --c-distance  --oclpath "..\OpenCLStaticLib"  --pv-verbose --pv-max-side "-1.0"   --ocln --c-show-render --cie none --output "dump"
+
+		("cam-sx", po::value<int>(&params.camera_size_x), "camera_size_x")
+		("cam-sy", po::value<int>(&params.camera_size_y), "camera_size_y")
+		("cam-f", po::value<float>(&focal_both), "focal_length: focal length for both x and y.  Sets params.camera_focal_x = params.camera_focal_y = focal_length;")
+		("cam-cx", po::value<float>(&params.camera_center_x), "camera_center_x")
+		("cam-cy", po::value<float>(&params.camera_center_y), "camera_center_y")
+		("cam-fx", po::value<float>(&params.camera_focal_x), "camera_focal_x")
+		("cam-fy", po::value<float>(&params.camera_focal_y), "camera_focal_y")
+		
+		                FOCAL_X=364.8132
+
+                FOCAL_Y=364.8132
+
+ 
+
+                CENTER_X=148.4368
+
+                CENTER_Y=113.3995
+ 
+ 
+///////////////////////////////////////////
+// DEMO
+
+// single (painting)
+--input "C:\devdata\oni\painting-water" --fonipng --max 3 --fi 3    --show-axes --pv-show-graph-edges --pv-show-mesh --pv-show-normals --oclpath "..\OpenCLStaticLib"    --ocln   --oc  --c-show-render --cdis 0.5  --output "dump" --pv-be 0.1   --pv-loop-di --pv-debug-vis  --pv-loop-features  --pv-loop-min-coverage "0.5" --pv-loop-skip 10 --pv-max-side 128   --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 100 --pv-max-mb 500 
+
+// single (espresso)
+--input "C:\devdata\oni\espresso-easy" --fonipng --max 3 --fi 3 --vnx 500 --vny 400 --vnz 150   --show-axes --pv-show-graph-edges --pv-show-mesh --pv-show-normals --oclpath "..\OpenCLStaticLib"    --ocln   --oc  --c-show-render --cdis 0.5  --output "dump" --pv-be 0.1   --pv-loop-di --pv-debug-vis  --pv-loop-features  --pv-loop-min-coverage "0.5" --pv-loop-skip 10 --pv-max-side 128   --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 100 --pv-max-mb 500 
+
+// patch volumes
+--input "C:\devdata\oni\espresso-easy" --fonipng --max 3 --fi 3    --show-axes --pv-show-graph-edges --pv-show-mesh --pv-show-normals --oclpath "..\OpenCLStaticLib"    --ocln   --oc  --c-show-render --cdis 0.5  --output "dump" --pv-be 0.1   --pv-loop-di --pv-debug-vis  --pv-loop-features  --pv-loop-min-coverage "0.5" --pv-loop-skip 10 --pv-max-side 128   --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 100 --pv --pv-max-mb 500 
+ 
+ 
+ 
+ //////////////////////////
+ // 3DV
+ // "current"
+ // note you changed segment-min-size from 1000 to 500 without checking ;)
+ // and it crashed the first time...hmmm...
+--input "C:\devdata\oni\espresso-easy" --fonipng --max 3 --fi 3    --show-axes --pv-show-graph-edges --pv-show-mesh --pv-show-normals --oclpath "..\OpenCLStaticLib"    --ocln   --oc  --c-show-render --cdis 0.5  --output "dump" --pv-be 0.1   --pv-loop-di --pv-debug-vis  --pv-loop-features  --pv-loop-min-coverage "0.5" --pv-loop-skip 10 --pv-max-side 128   --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 100 --pv --save-poses --pv-max-mb 500
+ 
+ // was first try
+--input "C:\devdata\oni\espresso-easy" --fonipng --max 3 --fi 3    --show-axes --pv-show-graph-edges --pv-show-mesh --pv-show-normals --oclpath "..\OpenCLStaticLib"    --ocln   --oc  --c-show-render --cdis 0.5  --pv-be 0.1 --pv-loop-di --pv-debug-vis  --pv-loop-features  --pv-loop-min-coverage "0.5" --pv-loop-skip 10 --pv-max-side 128   --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 100 --pv --save-poses --pv-max-mb 500  --output "3dv-espresso"
+ 
+--input "C:\devdata\oni\espresso-easy" --fonipng --max 3 --fi 3    --show-axes --pv-show-graph-edges --pv-show-mesh --pv-show-normals --oclpath "..\OpenCLStaticLib"    --ocln   --oc  --c-show-render --cdis 0.5  --pv-be 0.1 --pv-loop-di --pv-debug-vis  --pv-loop-features  --pv-loop-min-coverage "0.5" --pv-loop-skip 10 --pv-max-side 256   --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 100 --pv --save-poses --pv-max-mb 500  --output "3dv-espresso-256"
+
+// try some 491-2 (Skip around 460 with fi 3) (so I deleted them!)
+// but has alignment error earlier on...
+--input "C:\devdata\oni\cse491-2-1300" --fonipng --max 3 --fi 3    --show-axes --pv-show-graph-edges --pv-show-mesh --pv-show-normals --oclpath "..\OpenCLStaticLib"    --ocln   --oc  --c-show-render --cdis 0.5  --pv-be 0.1 --pv-loop-di --pv-debug-vis  --pv-loop-features  --pv-loop-min-coverage "0.5" --pv-loop-skip 10 --pv-max-side 256   --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 100 --pv --save-poses --pv-max-mb 500  --output "cse491-2-1300"
+
+// 491-1 has a huge skip around 3000 (so I deleted there too)
+
+--input "C:\devdata\oni\cse491-2-1300" --fonipng --max 3 --fi 1    --show-axes --pv-show-graph-edges --pv-show-mesh --pv-show-normals --oclpath "..\OpenCLStaticLib"    --ocln   --oc  --c-show-render --cdis 0.5  --pv-be 0.1 --pv-loop-di --pv-debug-vis  --pv-loop-features  --pv-loop-min-coverage "0.5" --pv-loop-skip 10 --pv-max-side 256   --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 100 --pv --save-poses --pv-max-mb 500  --output "cse491-2-1300-fi-1"
+
+// can also try without loop (remember to set max age to something huge)
+// nope, just broken...
+
+// just for fun, single volume, big
+--input "C:\devdata\oni\cse491-2-1300" --fonipng --max 3 --fi 1    --show-axes --pv-show-graph-edges --pv-show-mesh --pv-show-normals --oclpath "..\OpenCLStaticLib"    --ocln   --oc  --c-show-render --cdis 0.5  --pv-be 0.1 --pv-loop-di --pv-debug-vis  --pv-loop-features  --pv-loop-min-coverage "0.5" --pv-loop-skip 10 --pv-max-side 256   --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 100 --save-poses --pv-max-mb 500  --output "cse491-2-single" --vs 0.05
+// ok, that was stupid... now back to espresso-easy
+
+
+// try to get some segmentation demo images
+--input "C:\devdata\oni\espresso-easy" --fonipng --max 3 --fi 3    --show-axes --pv-show-graph-edges --pv-show-mesh --pv-show-normals --oclpath "..\OpenCLStaticLib"    --ocln   --oc  --c-show-render --cdis 0.5  --pv-be 0.1 --pv-loop-di --pv-debug-vis  --pv-loop-features  --pv-loop-min-coverage "0.5" --pv-loop-skip 10 --pv-max-side 256   --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 100 --pv --save-poses --pv-max-mb 500  --output "3dv-espresso-segments" --seg-di --fs 435 --save-seg-di --pause --pv-min-size 0
+
+// make pictures to go with the ONE GOOD RESULT
+// also remake the one good result with new segment params
+--input "C:\devdata\oni\espresso-easy" --fonipng --max 3 --fi 3  --pv-show-graph-edges --pv-show-mesh --oclpath "..\OpenCLStaticLib"    --ocln   --oc  --c-show-render --cdis 0.5  --pv-be 0.1 --pv-loop-di --pv-debug-vis  --pv-loop-features  --pv-loop-min-coverage "0.5" --pv-loop-skip 10 --pv-max-side 256   --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 50 --pv --save-poses --pv-max-mb 500  --output "3dv-espresso-faked" --white-bg
+
+// try without splitting just for fun
+--input "C:\devdata\oni\espresso-easy" --fonipng --max 3 --fi 3  --pv-show-graph-edges --pv-show-mesh --oclpath "..\OpenCLStaticLib"    --ocln   --oc  --c-show-render --cdis 0.5  --pv-be 0.1 --pv-loop-di --pv-debug-vis  --pv-loop-features  --pv-loop-min-coverage "0.5" --pv-loop-skip 10  --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 50 --pv --save-poses --pv-max-mb 500  --output "3dv-espresso-no-split" --white-bg
+ 
+--pv-max-side 256 
+
+///////////// copy back the fucking command line that you overwrote
+--input C:\devdata\oni\espresso-easy --fonipng --max 3 --fi 3 --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc --c-show-render --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 50 --pv --save-poses --pv-max-mb 500 --output 3dv-espresso-256-redo --white-bg 
+
+///// I guess you want some painting compare?
+--pv
+
+--input C:\devdata\oni\painting-water --fonipng --max 3 --fi 3 --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc --c-show-render --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 50  --save-poses --pv-max-mb 500 --output 3dv-painting --white-bg 
+
+--input C:\devdata\oni\painting-water --fonipng --max 3 --fi 3 --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc --c-show-render --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 50  --save-poses --pv-max-mb 500 --output 3dv-painting-wp0 --white-bg --wp 0
+
+--input C:\devdata\oni\painting-water --fonipng --max 3 --fi 3 --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc --c-show-render --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 50  --save-poses --pv-max-mb 500 --output 3dv-painting-wc0 --white-bg --wc 0
+// wc 0 failed within first five frames
+
+/////////////////////////////////////////////////////////////////
+///////////// Timing test:
+--pv-loop-di --pv-debug-vis
+--pv-show-graph-edges --pv-show-mesh
+--c-show-render
+--save-poses 
+
+--input C:\devdata\oni\espresso-easy --fonipng --max 3 --fi 3  --oclpath ..\OpenCLStaticLib --ocln --oc  --cdis 0.5 --pv-be 0.1  --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 50 --pv --pv-max-mb 500 --output 3dv-espresso-256-timing --white-bg 
+=> 721ms
+
+--input C:\devdata\oni\painting-water --fonipng --max 3 --fi 3  --oclpath ..\OpenCLStaticLib --ocln --oc --cdis 0.5 --pv-be 0.1  --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 50  --pv-max-mb 500 --output 3dv-painting --white-bg 
+=> 172ms
+
+// on cpu!
+--ocln
+--input C:\devdata\oni\painting-water --fonipng --max 3 --fi 3  --oclpath ..\OpenCLStaticLib  --oc --cdis 0.5 --pv-be 0.1  --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 50  --pv-max-mb 500 --output 3dv-painting --white-bg 
+
+
+
+/////////// demo
+
+--input C:\devdata\oni\painting-water --fonipng --max 3 --fi 3  --oclpath ..\OpenCLStaticLib --ocln --oc --cdis 0.5 --pv-be 0.1  --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 50  --pv-max-mb 500 --output painting  --c-show-render
+
+
+--input C:\devdata\oni\espresso-easy --fonipng --max 3 --fi 3 --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc --c-show-render --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 50 --pv --save-poses --pv-max-mb 500 --output espresso 
+
+
+
+
+
+
+/////////////////
+// slides movies
+--pv
+
+--input C:\devdata\oni\painting-water --fonipng --max 3 --fi 3 --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc --c-show-render --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 50  --save-poses --pv-max-mb 500 --white-bg --save-render-align --cdi --save-cdi --output movie-painting
+
+--input C:\devdata\oni\espresso-easy --fonipng --max 3 --fi 3 --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc --c-show-render --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 50  --save-poses --pv-max-mb 500 --white-bg --pv --save-render-align --output movie-espresso
+
+--input C:\devdata\oni\espresso-huge --fonipng --max 3 --fi 3 --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc --c-show-render --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 50  --save-poses --pv-max-mb 500 --white-bg --pv --save-render-align --output movie-espresso-huge
+
+// segment images and input
+--input C:\devdata\oni\espresso-easy --fonipng --max 3 --fi 3 --pv-show-graph-edges --pv-show-mesh --oclpath ..\OpenCLStaticLib --ocln --oc --c-show-render --cdis 0.5 --pv-be 0.1 --pv-loop-di --pv-debug-vis --pv-loop-features --pv-loop-min-coverage 0.5 --pv-loop-skip 10 --pv-max-side 256 --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 50  --save-poses --pv-max-mb 500 --white-bg --pv --output movie-espresso-2 --seg-di --save-seg-di --save-input-images
+
+// get a 3d pic of the segments to go with images
+--input "C:\devdata\oni\espresso-easy" --fonipng --max 3 --fi 3    --show-axes --pv-show-graph-edges --pv-show-mesh --pv-show-normals --oclpath "..\OpenCLStaticLib"    --ocln   --oc  --c-show-render --cdis 0.5  --pv-be 0.1 --pv-loop-di --pv-debug-vis  --pv-loop-features  --pv-loop-min-coverage "0.5" --pv-loop-skip 10 --pv-max-side 256   --pv-loop --pv-edge-loop-factor 100 --pv-use-age-since-in-frustum --pv-max-age-loop 100 --pv --save-poses --pv-max-mb 500  --output explain-segments   --seg-di --fs 435 --save-seg-di --pause --pv-min-size 0 --white-bg

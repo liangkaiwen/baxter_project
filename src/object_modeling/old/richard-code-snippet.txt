@@ -1,0 +1,20 @@
+ //scale the real world distance to the voxels so that we can use integer
+               //arithmetic on the SDF.
+               //                                const float sdf_vox =  (float)(((sdf/volDim.x)*volRes.x));
+               const float sdf_vox =  (float)(sdf*world2voxel);
+
+
+               //compute normalised distance to voxel
+               const float distNorm = (point2D.z)/(MAX_SENSOR_DEPTH);
+
+               const float trunPOS_INT = trunPOS_INT_ + distNorm*LINEAR_TRUNC_SCALE_FACTOR;
+               //const float trunc =  ((float)trunPOS_INT/(float)volRes.x)*volDim.x;
+               const float trunc =  (float)trunPOS_INT*d_voxel2world;
+
+
+
+               // culls away voxels behind the surface, but also allows us to compute zero crossing when we go from positive to negative
+               //if(d> 0 && sdf>NEG_TRUNCATE) // d>0 ensures valid depth pixels
+               //if(weightDepth.x > 0 && point3D.w!=0 && d> 0 && sdf_vox>-trunPOS_INT) // d>0 ensures valid depth pixels
+               if( sdf_vox>-trunPOS_INT ) // d>0 ensures valid depth pixels
+               {

@@ -1,0 +1,80 @@
+#pragma once
+
+#include "frame.hpp"
+#include "typedefs.h"
+#include "parameters.h"
+
+class TSDFVolume
+{
+	// exclude copying for now
+private:
+	TSDFVolume(const TSDFVolume& other);
+	void operator=(const TSDFVolume& other);
+
+public:
+	typedef float MAT_D_T;
+	typedef float MAT_W_T;
+
+	TSDFVolume(const Parameters& params);
+	~TSDFVolume(void) {};
+
+	void addRangeImage(const Eigen::Affine3f& pose, const FrameT& frame); // sync
+	void renderRangeImage(const Eigen::Affine3f& pose, const Eigen::Vector2f& proj_f, const Eigen::Vector2f& proj_c, const cv::Rect& range_rect, CloudT& point_cloud, pcl::PointCloud<pcl::Normal>& normal_cloud) const; // sync
+	std::vector<Eigen::Vector3f> getVolumeCorners(const Eigen::Affine3f& pose) const;
+	std::vector<std::pair<Eigen::Vector3f, TSDFVolume::MAT_D_T> > getNonzeroFilteredVoxelCenters(const Eigen::Affine3f& pose, float d_epsilon) const;
+	bool isEmpty() const {return volume_is_empty_;}
+	bool isPointInVolume(const Eigen::Vector3f& p) const;
+
+
+	// keep debug info about rays
+	mutable std::vector<std::vector<Eigen::Vector3f> > debug_ray_points_;
+
+protected:
+	Eigen::Matrix3f getProjectionMatrix(const Eigen::Vector2f& focal_lengths, const Eigen::Vector2f& center) const;
+	void projectPoint(const Eigen::Matrix3f& proj, const Eigen::Vector3f& p, Eigen::Vector2f& pixel) const;
+	Eigen::Vector3f voxelToWorld(const Eigen::Vector3i& voxel_coords) const;
+	Eigen::Vector3f worldToVoxelFloat(const Eigen::Vector3f& world_coords) const;
+	Eigen::Vector3i roundVector3fToInt(const Eigen::Vector3f& float_v) const; // this is probably in eigen somewhere
+	Eigen::Vector3i floorVector3fToInt(const Eigen::Vector3f& float_v) const; // this is probably in eigen somewhere
+
+	bool checkSurroundingVoxelsAreWithinVolume(const Eigen::Vector3f& voxel_coords_f) const;
+	bool checkIntVoxelIsWithinVolume(const Eigen::Vector3i& voxel_coords_i) const;
+	bool checkAllHaveWeights(const Eigen::Vector3f& voxel_coords_f) const;
+	bool checkAnyHaveWeights(const Eigen::Vector3f& voxel_coords_f) const;
+
+	float trilinearInterpolate(const Eigen::Vector3f& voxel_coords_f) const;
+	float trilinearInterpolateWeighted(const Eigen::Vector3f& voxel_coords_f) const;
+	cv::Vec3b trilinearInterpolateColor(const Eigen::Vector3f& voxel_coords_f) const;
+	cv::Vec3b floorTestColor(const Eigen::Vector3f& voxel_coords_f) const;
+
+	//////// Members
+	mutable boost::mutex mtx;
+
+	float voxel_size_;
+	float step_size_large_;
+	float step_size_small_;
+
+	// may not need to keep these:
+	Eigen::Vector3i dims_;
+	Eigen::Vector3i xyz0_;
+
+	// the TSDF values (min and max should match type)
+	cv::Mat mat_distances_;
+	cv::Mat mat_weights_;
+	cv::Mat mat_colors_; 
+	MAT_D_T d_min_; // neg
+	MAT_D_T d_max_; // pos
+	MAT_W_T w_max_; // can use this for sliding window if you like
+	float max_render_depth_;
+
+	// camera params
+	Eigen::Vector2f proj_f_;
+	Eigen::Vector2f proj_c_;
+	Eigen::Matrix3f projection_matrix_;
+
+	bool volume_is_empty_;
+
+	const Parameters& params;
+
+};
+

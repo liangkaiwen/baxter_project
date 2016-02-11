@@ -1,0 +1,20 @@
+// live
+--max 3  --mt grid --max_mb_gpu 3000 --f --vs 0.005 --grid_size 64
+
+// live small
+--max 1 --vs 0.0025 --mt grid  --max_mb_gpu 3000 --f 
+
+// live single
+--max 3
+
+// live loop
+--max 3  --mt grid  --max_mb_gpu 3000  --min_age 25  --merge_after_closure  --f  --loop_closure --keyframes_only   --grid_size 64
+
+// canned loop
+--oni C:\devdata\oni\espresso-easy.oni --frame_increment 3 --max 3  --mt grid --max_mb_gpu 3000  --min_age 25  --merge_after_closure  --f  --loop_closure --keyframes_only --glfw_join
+
+// canned loop linux
+--oni /home/peter/local/datasets/oni/espresso-easy.oni --frame_increment 3 --max 3  --mt grid  --max_mb_gpu 3000  --min_age 25  --merge_after_closure  --f  --loop_closure --keyframes_only --glfw_join
+
+
+

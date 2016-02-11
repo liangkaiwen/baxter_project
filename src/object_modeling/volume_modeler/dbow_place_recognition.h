@@ -1,0 +1,24 @@
+#pragma once
+
+#include "volume_modeler_all_params.h"
+
+#include "DLoopDetector.h"
+#include "DBoW2.h"
+
+#include "dbow_brief_extractor.h"
+
+class DBOWPlaceRecognition {
+public:
+    DBOWPlaceRecognition(const VolumeModelerAllParams & params);
+
+    void addAndDetectBGRA(const cv::Mat & image_bgra, std::vector<unsigned int> & result_loops);
+    void addAndDetectGray(const cv::Mat & image_gray, std::vector<unsigned int> & result_loops);
+
+protected:
+    const VolumeModelerAllParams & params_;
+    BriefLoopDetector::Parameters brief_loop_detector_params_;
+
+
+    boost::shared_ptr<BriefLoopDetector> brief_loop_detector_ptr_;
+    boost::shared_ptr<BriefExtractor> brief_extractor_ptr_;
+};

@@ -1,0 +1,8 @@
+// for truck in hand modeling
+--input "truck" --output "truck_output" --eur --ert 1e-4 --ec 0.5 --emii 0.3 --emrp 1000 --icdo 0.1 --crs 0.5 --cie "cbcr" --bs 5 --co 1 --imi 1 --ra  --mcf 1.0 --focal 540 --mhlhb 20 --mhlsb 10 --mhlvb 10 --mhmcb 50 --moe 2 --mhhe 0 --mhhd 2 --mhh --vs 0.002 --vrf 0.006 --vrb 0.006 --vdd --caj --cic --oi --oc --wf -1 --wp 40 --wc 1 --vn 256 --ocl --ocln
+
+// for mapping
+--input "cube" --output "cube_output" --of --md --icfix --output cube_4 --save-input --save-tables --crs 0.5 --cie cbcr --bs 5 --co 1 --imi 1 --ra --ras 0.5 --mcf 1.0 --focal 540 --mhlhb 20 --mhlsb 10 --mhlvb 10 --mhmcb 50 --moe 2 --mhhe 0 --mhhd 2 --mhh --vs 0.01 --vrf 0.03 --vrb 0.03 --vdd --caj --cic --oi --oc --wf -1 --wp 40 --wc 1 --vn 400 --ocl --ocln 
+
+// for live in-hand
+--output "live_output" --eur --ert 1e-4 --ec 0.5 --emii 0.3 --emrp 1000 --icdo 0.1 --crs 0.5 --cie "cbcr" --bs 5 --co 1 --imi 1 --ra  --mcf 1.0 --focal 540 --mhlhb 20 --mhlsb 10 --mhlvb 10 --mhmcb 50 --moe 2 --mhhe 0 --mhhd 2 --mhh --vs 0.002 --vrf 0.006 --vrb 0.006 --vdd --caj --cic --oi --oc --wf -1 --wp 40 --wc 1 --vn 256 --ocl --ocln

@@ -1,0 +1,37 @@
+#!/bin/python
+
+import sys
+import os
+import os.path
+import subprocess
+
+this_filename_for_usage = 'luis_batch_folder.py'
+
+# windows:
+#cwd = None
+#exe_file = 'C:/devlibs/object_modeling/batch_ready/volume_modeler_main'
+# linux:
+cwd = '.'
+exe_file = os.path.join(cwd, 'volume_modeler_main')
+command_string = exe_file
+command_string += ' --cl_path . --cli --vs 0.0025 --grid_size 64 --max 1.5 --circle_mask_pixel_radius 175 --circle_mask_x 185 --circle_mask_y 375 --f --mt grid --v  --max_mb_gpu 2000'
+#command_string += ' --save_mesh_every_n 200 --save_state_every_n 200'
+#command_string += ' --expect_luis_camera_list'
+command_string += ' --luis_limit_360'
+command_string += ' --luis "%s" --output "%s" > "%s"'
+
+if __name__=='__main__':
+    if (len(sys.argv)) != 3:
+	print "Usage: python %s [input_folder] [output_folder]" % this_filename_for_usage
+	sys.exit(1)
+    input_base_folder = os.path.abspath(sys.argv[1])
+    output_base_folder = os.path.abspath(sys.argv[2])
+    input_folder_path_list = [os.path.abspath(os.path.join(input_base_folder, x)) for x in os.listdir(input_base_folder)]
+    for input_full_path in input_folder_path_list:
+        print input_full_path
+        input_file_name = os.path.split(input_full_path)[1]
+        output_folder_name = input_file_name
+        output_folder_for_input_base = os.path.join(output_base_folder, output_folder_name)
+        if not os.path.exists(output_folder_for_input_base): os.makedirs(output_folder_for_input_base)
+        command = command_string % (input_full_path, output_folder_for_input_base, output_folder_for_input_base + '.txt')
+        subprocess.call(command, shell=True, cwd=cwd)

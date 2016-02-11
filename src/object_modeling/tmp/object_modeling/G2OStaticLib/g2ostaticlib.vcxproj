@@ -1,0 +1,195 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{1037C770-8812-479E-BD21-FECB4322FEA8}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>pcltest</RootNamespace>
+    <ProjectName>G2OStaticLib</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;WINDOWS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Program Files\PCL 1.6.0\3rdParty\Boost\include;$(DEVLIBS)\cminpack\cminpack-1.1.3-win64\include;C:\Program Files\PCL 1.6.0\3rdParty\Eigen\include;C:\Program Files\PCL 1.6.0\3rdParty\FLANN\include;$(DEVLIBS)\icl\include;$(DEVLIBS)\ipp\include;$(DEVLIBS)\opencv\opencv-2.4.2\build\include;C:\Program Files\PCL 1.6.0\include\pcl-1.6;$(DEVLIBS)\openni\openni-1.3.2-pcl-win64\Include;C:\Program Files\PCL 1.6.0\3rdParty\VTK\include\vtk-5.8;$(DEVLIBS)\g2o\g2o-win64\include;$(DEVLIBS)\g2o\g2o-win64\include\EXTERNAL\csparse;..\OpenCLStaticLib;$(INTELOCLSDKROOT)\include</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/Zm1000  /bigobj %(AdditionalOptions)</AdditionalOptions>
+      <OpenMPSupport>true</OpenMPSupport>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(DEVLIBS)\boost\boost-1.47.0-win64\lib;$(DEVLIBS)\cminpack\cminpack-1.1.3-win64\lib;$(DEVLIBS)\flann\flann-1.7.1-win64\lib;$(DEVLIBS)\icl\lib\intel64;$(DEVLIBS)\ipp\lib\intel64;$(DEVLIBS)\opencv\opencv-2.3.1\build_ipp\x64\vc10\staticlib;$(DEVLIBS)\openni\openni-1.3.2-pcl-win64\Lib64;$(DEVLIBS)\pcl\pcl-1.5.1-win64\lib;$(DEVLIBS)\qhull\qhull-6.2.0.1385-win64\lib;$(DEVLIBS)\vtk\vtk-5.8.0-win64\lib\vtk-5.8;$(INTELOCLSDKROOT)\lib\x64;$(DEVLIBS)\g2o\g2o-win64\lib\Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ippcore_l.lib;ippi_l.lib;ipps_l.lib;ippcv_l.lib;ippvm_l.lib;mf.lib;mfuuid.lib;mfplat.lib;mfreadwrite.lib;vfw32.lib;comctl32.lib;openni64.lib;OpenCL.lib;libjasperd.lib;libjpegd.lib;libpngd.lib;libtiffd.lib;opencv_calib3d231d.lib;opencv_contrib231d.lib;opencv_core231d.lib;opencv_features2d231d.lib;opencv_flann231d.lib;opencv_gpu231d.lib;opencv_haartraining_engined.lib;opencv_highgui231d.lib;opencv_imgproc231d.lib;opencv_legacy231d.lib;opencv_ml231d.lib;opencv_objdetect231d.lib;opencv_video231d.lib;zlibd.lib;cminpack_s-gd.lib;flann_cpp_s-gd.lib;pcl_apps_debug.lib;pcl_common_debug.lib;pcl_features_debug.lib;pcl_filters_debug.lib;pcl_io_debug.lib;pcl_io_ply_debug.lib;pcl_kdtree_debug.lib;pcl_keypoints_debug.lib;pcl_octree_debug.lib;pcl_range_image_border_extractor_debug.lib;pcl_registration_debug.lib;pcl_sample_consensus_debug.lib;pcl_search_debug.lib;pcl_segmentation_debug.lib;pcl_surface_debug.lib;pcl_tracking_debug.lib;pcl_visualization_debug.lib;qhullstatic_d.lib;opengl32.lib;vtkcommon-gd.lib;vtksys-gd.lib;vtkFiltering-gd.lib;vtkRendering-gd.lib;vtkio-gd.lib;vtkpng-gd.lib;vtktiff-gd.lib;vtkzlib-gd.lib;vtkjpeg-gd.lib;vtkexpat-gd.lib;vtkImaging-gd.lib;vtkGraphics-gd.lib;g2o_calibration_odom_laser_d.lib;g2o_cli_d.lib;g2o_core_d.lib;g2o_csparse_extension_d.lib;g2o_ext_csparse_d.lib;g2o_interface_d.lib;g2o_parser_d.lib;g2o_simulator_d.lib;g2o_solver_csparse_d.lib;g2o_solver_dense_d.lib;g2o_solver_pcg_d.lib;g2o_solver_slam2d_linear_d.lib;g2o_solver_structure_only_d.lib;g2o_stuff_d.lib;g2o_tutorial_slam2d_d.lib;g2o_types_data_d.lib;g2o_types_icp_d.lib;g2o_types_sba_d.lib;g2o_types_sclam2d_d.lib;g2o_types_sim3_d.lib;g2o_types_slam2d_d.lib;g2o_types_slam3d_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;WINDOWS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\PCL 1.6.0\3rdParty\Boost\include;C:\Program Files %28x86%29\PCL 1.6.0\3rdParty\Eigen\include;C:\Program Files %28x86%29\PCL 1.6.0\3rdParty\FLANN\include;C:\devlibs\opencv\build\include;C:\Program Files %28x86%29\OpenNI\Include\Win32;C:\Program Files %28x86%29\PCL 1.6.0\include\pcl-1.6;C:\Program Files %28x86%29\PCL 1.6.0\3rdParty\VTK\include\vtk-5.8;C:\devlibs\github\g2o\install\include;C:\devlibs\github\g2o\install\include\EXTERNAL\csparse</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <AdditionalOptions>/Zm512 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(DEVLIBS)\boost\boost-1.47.0-win32\lib;$(DEVLIBS)\cminpack\cminpack-1.1.3-win32\lib;$(DEVLIBS)\flann\flann-1.7.1-win32\lib;$(DEVLIBS)\icl\lib\ia32;$(DEVLIBS)\ipp\lib\ia32;$(DEVLIBS)\opencv\opencv-2.3.1\build_ipp\x86\vc10\staticlib;$(DEVLIBS)\openni\openni-1.5.2.23-win32\Lib;$(DEVLIBS)\pcl\pcl-1.5.1-win32\lib;$(DEVLIBS)\qhull\qhull-6.2.0.1385-win32\lib;$(DEVLIBS)\vtk\vtk-5.8.0-win32\lib\vtk-5.8;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ippcore_l.lib;ippi_l.lib;ipps_l.lib;ippcv_l.lib;ippvm_l.lib;mf.lib;mfuuid.lib;mfplat.lib;mfreadwrite.lib;vfw32.lib;comctl32.lib;openni.lib;libjasperd.lib;libjpegd.lib;libpngd.lib;libtiffd.lib;opencv_calib3d231d.lib;opencv_contrib231d.lib;opencv_core231d.lib;opencv_features2d231d.lib;opencv_flann231d.lib;opencv_gpu231d.lib;opencv_haartraining_engined.lib;opencv_highgui231d.lib;opencv_imgproc231d.lib;opencv_legacy231d.lib;opencv_ml231d.lib;opencv_objdetect231d.lib;opencv_video231d.lib;zlibd.lib;cminpack_s-gd.lib;flann_cpp_s-gd.lib;pcl_apps_debug.lib;pcl_common_debug.lib;pcl_features_debug.lib;pcl_filters_debug.lib;pcl_io_debug.lib;pcl_io_ply_debug.lib;pcl_kdtree_debug.lib;pcl_keypoints_debug.lib;pcl_octree_debug.lib;pcl_range_image_border_extractor_debug.lib;pcl_registration_debug.lib;pcl_sample_consensus_debug.lib;pcl_search_debug.lib;pcl_segmentation_debug.lib;pcl_surface_debug.lib;pcl_tracking_debug.lib;pcl_visualization_debug.lib;qhullstatic_d.lib;opengl32.lib;vtkcommon-gd.lib;vtksys-gd.lib;vtkFiltering-gd.lib;vtkRendering-gd.lib;vtkio-gd.lib;vtkpng-gd.lib;vtktiff-gd.lib;vtkzlib-gd.lib;vtkjpeg-gd.lib;vtkexpat-gd.lib;vtkImaging-gd.lib;vtkGraphics-gd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;WINDOWS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Program Files\PCL 1.6.0\3rdParty\Boost\include;$(DEVLIBS)\cminpack\cminpack-1.1.3-win64\include;C:\Program Files\PCL 1.6.0\3rdParty\Eigen\include;C:\Program Files\PCL 1.6.0\3rdParty\FLANN\include;$(DEVLIBS)\icl\include;$(DEVLIBS)\ipp\include;$(DEVLIBS)\opencv\opencv-2.4.2\build\include;C:\Program Files\PCL 1.6.0\include\pcl-1.6;$(DEVLIBS)\openni\openni-1.3.2-pcl-win64\Include;C:\Program Files\PCL 1.6.0\3rdParty\VTK\include\vtk-5.8;$(DEVLIBS)\g2o\g2o-win64\include;$(DEVLIBS)\g2o\g2o-win64\include\EXTERNAL\csparse;..\OpenCLStaticLib;$(INTELOCLSDKROOT)\include</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OpenMPSupport>true</OpenMPSupport>
+      <AdditionalOptions>/Zm1000 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(DEVLIBS)\boost\boost-1.47.0-win64\lib;$(DEVLIBS)\cminpack\cminpack-1.1.3-win64\lib;$(DEVLIBS)\flann\flann-1.7.1-win64\lib;$(DEVLIBS)\icl\lib\intel64;$(DEVLIBS)\ipp\lib\intel64;$(DEVLIBS)\opencv\opencv-2.3.1\build_ipp\x64\vc10\staticlib;$(DEVLIBS)\openni\openni-1.3.2-pcl-win64\Lib64;$(DEVLIBS)\pcl\pcl-1.5.1-win64\lib;$(DEVLIBS)\qhull\qhull-6.2.0.1385-win64\lib;$(DEVLIBS)\vtk\vtk-5.8.0-win64\lib\vtk-5.8;$(INTELOCLSDKROOT)\lib\x64;$(DEVLIBS)\g2o\g2o-win64\lib\RelWithDebInfo</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ippcore_l.lib;ippi_l.lib;ipps_l.lib;ippcv_l.lib;ippvm_l.lib;mf.lib;mfuuid.lib;mfplat.lib;mfreadwrite.lib;vfw32.lib;comctl32.lib;openni64.lib;OpenCL.lib;libjasper.lib;libjpeg.lib;libpng.lib;libtiff.lib;opencv_calib3d231.lib;opencv_contrib231.lib;opencv_core231.lib;opencv_features2d231.lib;opencv_flann231.lib;opencv_gpu231.lib;opencv_haartraining_engine.lib;opencv_highgui231.lib;opencv_imgproc231.lib;opencv_legacy231.lib;opencv_ml231.lib;opencv_objdetect231.lib;opencv_video231.lib;zlib.lib;cminpack_s.lib;flann_cpp_s.lib;pcl_apps_release.lib;pcl_common_release.lib;pcl_features_release.lib;pcl_filters_release.lib;pcl_io_release.lib;pcl_io_ply_release.lib;pcl_kdtree_release.lib;pcl_keypoints_release.lib;pcl_octree_release.lib;pcl_range_image_border_extractor_release.lib;pcl_registration_release.lib;pcl_sample_consensus_release.lib;pcl_search_release.lib;pcl_segmentation_release.lib;pcl_surface_release.lib;pcl_tracking_release.lib;pcl_visualization_release.lib;qhullstatic.lib;opengl32.lib;vtkcommon.lib;vtksys.lib;vtkFiltering.lib;vtkRendering.lib;vtkio.lib;vtkpng.lib;vtktiff.lib;vtkzlib.lib;vtkjpeg.lib;vtkexpat.lib;vtkImaging.lib;vtkGraphics.lib;g2o_calibration_odom_laser_rd.lib;g2o_cli_rd.lib;g2o_core_rd.lib;g2o_csparse_extension_rd.lib;g2o_ext_csparse_rd.lib;g2o_interface_rd.lib;g2o_parser_rd.lib;g2o_simulator_rd.lib;g2o_solver_csparse_rd.lib;g2o_solver_dense_rd.lib;g2o_solver_pcg_rd.lib;g2o_solver_slam2d_linear_rd.lib;g2o_solver_structure_only_rd.lib;g2o_stuff_rd.lib;g2o_tutorial_slam2d_rd.lib;g2o_types_data_rd.lib;g2o_types_icp_rd.lib;g2o_types_sba_rd.lib;g2o_types_sclam2d_rd.lib;g2o_types_sim3_rd.lib;g2o_types_slam2d_rd.lib;g2o_types_slam3d_rd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;WINDOWS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\PCL 1.6.0\3rdParty\Boost\include;C:\Program Files %28x86%29\PCL 1.6.0\3rdParty\Eigen\include;C:\Program Files %28x86%29\PCL 1.6.0\3rdParty\FLANN\include;C:\devlibs\opencv\build\include;C:\Program Files %28x86%29\OpenNI\Include\Win32;C:\Program Files %28x86%29\PCL 1.6.0\include\pcl-1.6;C:\Program Files %28x86%29\PCL 1.6.0\3rdParty\VTK\include\vtk-5.8;C:\devlibs\github\g2o\install\include;C:\devlibs\github\g2o\install\include\EXTERNAL\csparse</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <AdditionalOptions>/Zm512 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(DEVLIBS)\boost\boost-1.47.0-win32\lib;$(DEVLIBS)\cminpack\cminpack-1.1.3-win32\lib;$(DEVLIBS)\flann\flann-1.7.1-win32\lib;$(DEVLIBS)\icl\lib\ia32;$(DEVLIBS)\ipp\lib\ia32;$(DEVLIBS)\opencv\opencv-2.3.1\build_ipp\x86\vc10\staticlib;$(DEVLIBS)\openni\openni-1.5.2.23-win32\Lib;$(DEVLIBS)\pcl\pcl-1.5.1-win32\lib;$(DEVLIBS)\qhull\qhull-6.2.0.1385-win32\lib;$(DEVLIBS)\vtk\vtk-5.8.0-win32\lib\vtk-5.8;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ippcore_l.lib;ippi_l.lib;ipps_l.lib;ippcv_l.lib;ippvm_l.lib;mf.lib;mfuuid.lib;mfplat.lib;mfreadwrite.lib;vfw32.lib;comctl32.lib;openni.lib;libjasper.lib;libjpeg.lib;libpng.lib;libtiff.lib;opencv_calib3d231.lib;opencv_contrib231.lib;opencv_core231.lib;opencv_features2d231.lib;opencv_flann231.lib;opencv_gpu231.lib;opencv_haartraining_engine.lib;opencv_highgui231.lib;opencv_imgproc231.lib;opencv_legacy231.lib;opencv_ml231.lib;opencv_objdetect231.lib;opencv_video231.lib;zlib.lib;cminpack_s.lib;flann_cpp_s.lib;pcl_apps_release.lib;pcl_common_release.lib;pcl_features_release.lib;pcl_filters_release.lib;pcl_io_release.lib;pcl_io_ply_release.lib;pcl_kdtree_release.lib;pcl_keypoints_release.lib;pcl_octree_release.lib;pcl_range_image_border_extractor_release.lib;pcl_registration_release.lib;pcl_sample_consensus_release.lib;pcl_search_release.lib;pcl_segmentation_release.lib;pcl_surface_release.lib;pcl_tracking_release.lib;pcl_visualization_release.lib;qhullstatic.lib;opengl32.lib;vtkcommon.lib;vtksys.lib;vtkFiltering.lib;vtkRendering.lib;vtkio.lib;vtkpng.lib;vtktiff.lib;vtkzlib.lib;vtkjpeg.lib;vtkexpat.lib;vtkImaging.lib;vtkGraphics.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="G2OPoseGraph.h" />
+    <ClInclude Include="G2OStereoProjector.hpp" />
+    <ClInclude Include="sac_model_registration_reprojection.h" />
+    <ClInclude Include="sac_model_registration_reprojection.hpp" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="G2OPoseGraph.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
