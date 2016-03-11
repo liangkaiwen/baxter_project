@@ -1,0 +1,6 @@
+# return the number of points from point cloud that are inside box
+string frame_id
+pr2_pick_perception/Cluster cluster
+pr2_pick_perception/Box[] boxes
+---
+int32[] num_points

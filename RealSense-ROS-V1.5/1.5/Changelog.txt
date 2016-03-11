@@ -1,0 +1,15 @@
+Changelog:
+
+V1.5
+~~~~~
+
+- Changed depth encoding from mono16 to sensor_msgs::image_encodings::TYPE_16UC1 to be compatible with depth_image_proc nodes
+- Added point cloud registration with color
+- Added CameraInfo messages for R200 and F200
+- Added UV mapping message for F200
+- Fixed Bug in UV mapping for R200
+- Removed camera name in F200 - no need with new API
+
+Known issues:
+
+- F200 enableColor and enableDepth not supported.

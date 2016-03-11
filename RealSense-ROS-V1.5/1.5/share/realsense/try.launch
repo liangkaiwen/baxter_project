@@ -1,0 +1,94 @@
+<launch>
+	<arg name="cHeight" default="480" />
+	<arg name="cWidth" default="640" />
+	<arg name="dHeight" default="480" />
+	<arg name="dWidth" default="640" />
+	<arg name="colorCamera" default="/dev/video1" />
+	<arg name="depthCamera" default="/dev/video2" />
+	<arg name="pcScale" default="1000" />
+	<arg name="enableDepth" default="1" />
+	<arg name="enableColor" default="1" />
+	
+  	<node pkg="nodelet" type="nodelet" name="standalone_nodelet"  args="manager" output="screen"/>
+  	
+	<node pkg="nodelet" type="nodelet" name="CF200Nodelet"
+        args="load f200_ros/CF200Nodelet standalone_nodelet 
+        pcScale $(arg pcScale)
+        cHeight $(arg cHeight) 
+        cWidth $(arg cWidth)
+        dHeight $(arg dHeight)
+        dWidth $(arg dWidth)
+        colorCamera $(arg colorCamera)
+        depthCamera $(arg depthCamera)
+        enableColor $(arg enableColor)
+        enableDepth $(arg enableDepth)">
+
+	<remap from="camera/depth/camera_info" to="depth/camera_info"/>
+	<remap from="camera/depth/image_raw" to="depth/image_rect"/>
+	<remap from="camera/color/camera_info" to="rgb/camera_info"/>
+	<remap from="camera/color/image_raw" to="rgb/image_rect_color"/>
+
+  	</node>
+
+	<!--arg name="cHeight" default="480" />
+	<arg name="cWidth" default="640" />
+	<arg name="dHeight" default="360" />
+	<arg name="dWidth" default="480" />
+	<arg name="colorCamera" default="/dev/video1" />
+	<arg name="depthCamera" default="/dev/video2" />
+	<arg name="pcScale" default="100" />
+	<arg name="enableDepth" default="1" />
+	<arg name="enableColor" default="1" />
+	
+  	<node pkg="nodelet" type="nodelet" name="standalone_nodelet"  args="manager" output="screen"/>
+  	
+	<node pkg="nodelet" type="nodelet" name="CR200Nodelet"
+        args="load r200_ros/CR200Nodelet standalone_nodelet 
+        pcScale $(arg pcScale)
+        cHeight $(arg cHeight) 
+        cWidth $(arg cWidth)
+        dHeight $(arg dHeight)
+        dWidth $(arg dWidth)
+        colorCamera $(arg colorCamera)
+        depthCamera $(arg depthCamera)
+        enableColor $(arg enableColor)
+        enableDepth $(arg enableDepth)">
+
+
+	<remap from="camera/depth/camera_info" to="depth/camera_info"/>
+	<remap from="camera/depth/image_raw" to="depth/image_rect"/>
+	<remap from="camera/color/camera_info" to="rgb/camera_info"/>
+	<remap from="camera/color/image_raw" to="rgb/image_rect_color"/>
+  	
+	</node -->
+
+ <!-- The depth image is already rectified and registered
+to the camera optical frame, but stored in mm; convert it
+to meters -->
+	<!--node pkg="nodelet" type="nodelet" name="metric_rect"
+		args="load depth_image_proc/convert_metric standalone_nodelet -no-bond">
+		
+		<remap from="image_raw" to="camera/depth/image_raw"/>
+		<remap from="image" to="depth_registered/image_rect"/>
+	</node-->
+
+
+	<node pkg="nodelet" type="nodelet" name="depth_register"
+		args="load depth_image_proc/register standalone_nodelet -no-bond">
+		
+	</node>
+
+ <!-- arg name="cloud_input_ns" value="camera/color" /-->
+
+ <!-- Convert it into a point cloud -->
+<node pkg="nodelet" type="nodelet" name="cloudify"
+	args="load depth_image_proc/point_cloud_xyz standalone_nodelet --no-bond">
+
+</node> 
+
+ <node pkg="nodelet" type="nodelet" name="cloudify_rgb"
+	args="load depth_image_proc/point_cloud_xyzrgb standalone_nodelet --no-bond">
+
+</node> 
+  
+</launch>
