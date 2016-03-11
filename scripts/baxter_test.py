@@ -95,15 +95,17 @@ def main():
 	rate = rospy.Rate(baxter_test._rate)
 	#retrieve point cloud data from Baxter
 	point_cloud_msg = ros_topic_get("/camera/depth_registered/points", PointCloud2)
-	print "point cloud data received"
 	point_cloud_array = pointclouds.pointcloud2_to_xyz_array(point_cloud_msg)
-	#print point_cloud_array
 	point_cloud_array = transform_matrix(point_cloud_array, "/camera_rgb_optical_frame", "/base")
 	point_cloud = pcl.PointCloud() #create new pcl PointCloud
 	point_cloud.from_list(point_cloud_array) #import data to PointCloud from 2d matrix
-	print point_cloud
 
-	
+	#Experimental code for the hand mounted camera
+	print "looking up hand camera"
+	"""f200_cloud_msg = ros_topic_get("/camera/depth/points", PointCloud2)
+	print f200_cloud_msg
+	point_cloud_array = pointclouds.pointcloud2_to_xyz_array(f200_cloud_msg)
+	print point_cloud_array"""
 
 	#filter data
 	fil = point_cloud.make_passthrough_filter()
@@ -130,45 +132,23 @@ def main():
 	X = object_cloud.to_array()
 	#our PCA only needs to deal with x-y plane, remove z values
 	X = X[:,[0,1]]
-	print X
 	pca = PCA(n_components=2)
 	X = pca.fit_transform(X)
-	print X
-	print "PCA:"
-	print pca.components_
 
+	#calculate object centroid
 	object_centroid = get_centroid(object_cloud)
 
-	print "Centroid:"
-	print object_centroid
-
+	#calculate object bounding box
 	bounding_box = fit_bounding_box(object_cloud, pca.components_, object_centroid)
-	print bounding_box
 	#baxter_test.move_left_to_coord(object_centroid)
 
 	
 	publisher = rospy.Publisher("/baxter_test", MarkerArray, queue_size = 10)
 	marker_array = MarkerArray()
 
-	"""test_marker = Marker()
-	test_marker.header.frame_id = "/camera_rgb_optical_frame"
-	test_marker.header.stamp = rospy.Time(0)
-	test_marker.type = test_marker.SPHERE
-	test_marker.action = test_marker.ADD
-	test_marker.pose.position.x = 1.0
-	test_marker.pose.position.y = 1.0
-	test_marker.pose.position.z = 1.0
-	test_marker.scale.x = 1.0
-	test_marker.scale.y = 1.0
-	test_marker.scale.z = 1.0
-	test_marker.color.a = 1.0
-	test_marker.color.r = 1.0
-	test_marker.color.g = 0.0
-	test_marker.color.b = 0.0"""
-
 	
-	#PCA vector sanity check
-	count = 0
+	#PCA vector sanity check (if needed)
+	"""count = 0
 	for vector in pca.components_:
 		vector_marker = Marker()
 		vector_marker.header.frame_id = "/base"
@@ -193,103 +173,7 @@ def main():
 		vector_marker.scale.y = 0.02
 		vector_marker.id = count
 		marker_array.markers.append(vector_marker)
-		count += 1
-
-	#count = 0
-	#Point cloud sanity check
-	id = 0
-	"""for point in object_cloud:
-		marker = Marker()
-		marker.header.frame_id = "/world" #"/camera_rgb_optical_frame"
-		marker.header.stamp = rospy.Time(0) #rospy.Time.now()
-		marker.type = marker.SPHERE
-		marker.action = marker.ADD
-		marker.pose.position.x = point[0]
-		marker.pose.position.y = point[1]
-		marker.pose.position.z = point[2]
-		marker.scale.x = 0.01
-		marker.scale.y = 0.01
-		marker.scale.z = 0.01
-		marker.color.a = 1.0
-		marker.color.r = 1.0
-		marker.color.g = 0.0
-		marker.color.b = 0.0
-
-		#set marker id
-		marker.id = id
-		id += 1
-
-		count += 1
-		marker_array.markers.append(marker)"""
-
-	print count
-
-	"""for point in bounding_box:
-		marker = Marker()
-		marker.header.frame_id = "/world"
-		marker.header.stamp = rospy.Time(0)
-		marker.type = marker.SPHERE
-		marker.action = marker.ADD
-		marker.pose.position.x = point[0]
-		marker.pose.position.y = point[1]
-		marker.pose.position.z = point[2]
-		marker.scale.x = 0.02
-		marker.scale.y = 0.02
-		marker.scale.z = 0.02
-		marker.color.a = 1.0
-		marker.color.r = 0.0
-		marker.color.g = 1.0
-		marker.color.b = 0.0
-
-		marker.id = id
-		id += 1
-
-		count += 1
-		marker_array.markers.append(marker)
-
-	print count
-
-	lines = Marker()
-	lines.header.frame_id = "/world"
-	lines.header.stamp = rospy.Time(0)
-	lines.type = marker.LINE_STRIP
-	lines.action = marker.ADD
-	lines.scale.x = 0.01
-	lines.color.a = 1.0
-	lines.color.r = 0.0
-	lines.color.g = 0.0
-	lines.color.b = 1.0
-
-	lines.points = [createPoint_tuple(bounding_box[0]),
-		             createPoint_tuple(bounding_box[1]),
-		             createPoint_tuple(bounding_box[2]),
-		             createPoint_tuple(bounding_box[3]),
-		             createPoint_tuple(bounding_box[0]),
-		             createPoint_tuple(bounding_box[4]),
-		             createPoint_tuple(bounding_box[5]),
-		             createPoint_tuple(bounding_box[6]),
-		             createPoint_tuple(bounding_box[7]),
-		             createPoint_tuple(bounding_box[4])]
-	marker_array.markers.append(lines)
-
-	#fill in remaining vertical lines
-	for i in range(3):
-		line = Marker()
-		line.header.frame_id = "/world"
-		line.header.stamp = rospy.Time(0)
-		line.type = marker.LINE_STRIP
-		line.action = marker.ADD
-		line.scale.x = 0.01
-		line.color.a = 1.0
-		line.color.r = 0.0
-		line.color.g = 0.0
-		line.color.b = 1.0
-
-		line.points = [createPoint_tuple(bounding_box[i + 1]),
-			            createPoint_tuple(bounding_box[i + 5])]
-
-		marker_array.markers.append(line)"""
-
+		count += 1"""
 
 	#continually do stuff
 	while not rospy.is_shutdown():
